@@ -19,3 +19,17 @@ jobs:
 
     - name: setup-android-tools
       uses: ./
+      with:
+        packages: ndk;19.2.5345600
+    
+    - name: setup-anroid-tools-2
+      uses: ./
+      with:
+        packages: |
+          sources;android-28
+          sources;android-29
+
+    - name: already-installed
+      uses: ./
+      with:
+        packages: platforms;android-29

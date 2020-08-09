@@ -4,8 +4,7 @@ description: 'Set up Android tools in GitHub Actions workflow with cache'
 inputs:
   packages:
     description: 'Packages to install'
-    required: false
-    default: ""
+    required: true
   cache:
     description: 'Cache installed packages to speed up workflows'
     required: false

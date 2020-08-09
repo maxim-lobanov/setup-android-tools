@@ -12,6 +12,13 @@ export class SDKManager {
         this.sdkManagerPath = `"${path.join(androidHome, "tools", "bin", "sdkmanager")}"`;
     }
 
+    public async install(packageInfo: AndroidPackageInfo): Promise<void> {
+        const exitCode = await exec.exec(this.sdkManagerPath, [packageInfo.name]);
+        if (exitCode !== 0) {
+            throw new Error(`'sdkmanager ${packageInfo.name}' has finished with exit code '${exitCode}'`);
+        }
+    }
+
     public async getAllPackagesInfo(): Promise<AndroidPackageInfo[]> {
         let stdout = "";
         const stdoutListener = (data: Buffer): void => { stdout += data.toString(); };

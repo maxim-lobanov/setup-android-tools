@@ -1368,7 +1368,7 @@ exports.parseSDKManagerOutput = (stdout) => {
             lineIndex += 2;
             continue;
         }
-        const cols = line.split("|").filter(Boolean).map(s => s.trim());
+        const cols = line.split("|").map(s => s.trim()).filter(Boolean);
         if (state === "InstalledPackages") {
             pushPackage({
                 name: cols[0],
@@ -1671,6 +1671,12 @@ class SDKManager {
         }
         this.sdkManagerPath = `"${path_1.default.join(androidHome, "tools", "bin", "sdkmanager")}"`;
     }
+    async install(packageInfo) {
+        const exitCode = await exec.exec(this.sdkManagerPath, [packageInfo.name]);
+        if (exitCode !== 0) {
+            throw new Error(`'sdkmanager ${packageInfo.name}' has finished with exit code '${exitCode}'`);
+        }
+    }
     async getAllPackagesInfo() {
         let stdout = "";
         const stdoutListener = (data) => { stdout += data.toString(); };
@@ -1773,10 +1779,28 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
 const sdk_manager_1 = __webpack_require__(857);
+const os_1 = __webpack_require__(87);
+const getListInput = (inputName) => {
+    const value = core.getInput(inputName);
+    return value.split(os_1.EOL).map(s => s.trim()).filter(Boolean);
+};
+const getBooleanInput = (inputName) => {
+    return (core.getInput(inputName) || "false").toUpperCase() === "TRUE";
+};
 const run = async () => {
     try {
+        const packagesToInstall = getListInput("packages");
+        const cache = getBooleanInput("cache");
+        core.debug(String(cache));
         const sdkmanager = new sdk_manager_1.SDKManager();
-        await sdkmanager.getAllPackagesInfo();
+        const packages = await sdkmanager.getAllPackagesInfo();
+        packagesToInstall.forEach(packageName => {
+            const foundPackage = packages.find(p => p.name === packageName);
+            if (!foundPackage) {
+                throw new Error(`Package '${packageName}' is not available. Enable debug output for more details.`);
+            }
+            sdkmanager.install(foundPackage);
+        });
     }
     catch (error) {
         core.setFailed(error.message);

@@ -61,7 +61,7 @@ export const parseSDKManagerOutput = (stdout: string): AndroidPackageInfo[] => {
             continue;
         }
 
-        const cols = line.split("|").filter(Boolean).map(s => s.trim());
+        const cols = line.split("|").map(s => s.trim()).filter(Boolean);
         if (state === "InstalledPackages") {
             pushPackage({
                 name: cols[0],

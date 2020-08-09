@@ -14,8 +14,7 @@ export class SDKManager {
     constructor() {
         const androidHome = process.env.ANDROID_HOME;
         if (!androidHome) { throw new Error("ANDROID_HOME env variable is not defined"); }
-        const sdkManagerPath = path.join(androidHome, "tools", "bin", "sdkmanager");
-        this.sdkManagerPath = `'${sdkManagerPath}'`;
+        this.sdkManagerPath = `"${path.join(androidHome, "tools", "bin", "sdkmanager")}"`;
         // macOS
         // SDKMANAGER=$ANDROID_HOME/tools/bin/sdkmanager
         // Ubuntu

@@ -50,8 +50,8 @@ export class SDKManager {
                 stderr: outputListener,
             },
         };
-        const commandString = `${this.sdkManagerPath} ${args.join(" ")}`;
-        core.info(commandString);
+        const commandString = `${this.sdkManagerPath.replace("\"", "")} ${args.join(" ")}`;
+        console.log(commandString);
         const exitCode = await exec.exec(this.sdkManagerPath, args, options);
         if (exitCode !== 0) {
             throw new Error(`'${commandString}' has finished with exit code '${exitCode}'`);

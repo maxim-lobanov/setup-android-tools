@@ -1,5 +1,6 @@
 import * as fs from "fs";
-import { getNewState, parseSDKManagerOutput, AndroidPackageInfo, splitByEOL } from "../src/sdk-manager-parser";
+import { getNewState, parseSDKManagerOutput, AndroidPackageInfo } from "../src/sdk-manager-parser";
+import { splitByEOL } from "../src/utils";
 
 describe("getNewState", () => {
     it.each([

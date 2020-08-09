@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
 import * as os from "os";
 import { SDKManager } from "./sdk-manager";
-import { splitByEOL } from "./sdk-manager-parser";
+import { splitByEOL } from "./utils";
 
 const getListInput = (inputName: string): string[] => {
     const value = core.getInput(inputName);

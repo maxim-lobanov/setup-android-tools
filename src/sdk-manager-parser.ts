@@ -1,4 +1,5 @@
 import * as core from "@actions/core";
+import { splitByEOL } from "./utils";
 
 export interface AndroidPackageInfo {
     name: string;
@@ -24,10 +25,6 @@ export const getNewState = (line: string): ParserState | null => {
         if (core.isDebug()) { core.debug(`Unknown state '${line}'`); }
         return "None";
     }
-};
-
-export const splitByEOL = (stdout: string): string[] => {
-    return stdout.split(/[\r\n]/);
 };
 
 export const parseSDKManagerOutput = (stdout: string): AndroidPackageInfo[] => {

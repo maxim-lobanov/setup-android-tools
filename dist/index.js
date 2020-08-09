@@ -1321,8 +1321,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseSDKManagerOutput = exports.splitByEOL = exports.getNewState = void 0;
+exports.parseSDKManagerOutput = exports.getNewState = void 0;
 const core = __importStar(__webpack_require__(470));
+const utils_1 = __webpack_require__(611);
 exports.getNewState = (line) => {
     if (!/^[\w ]+:$/.test(line)) {
         return null;
@@ -1338,9 +1339,6 @@ exports.getNewState = (line) => {
             return "None";
     }
 };
-exports.splitByEOL = (stdout) => {
-    return stdout.split(/[\r\n]/);
-};
 exports.parseSDKManagerOutput = (stdout) => {
     const result = [];
     let state = "None";
@@ -1354,7 +1352,7 @@ exports.parseSDKManagerOutput = (stdout) => {
             result.push({ ...defaultPackage, ...packet });
         }
     };
-    const lines = exports.splitByEOL(stdout);
+    const lines = utils_1.splitByEOL(stdout);
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
         const line = lines[lineIndex].trim();
         if (line.length === 0) {
@@ -1395,6 +1393,20 @@ exports.parseSDKManagerOutput = (stdout) => {
         }
     }
     return result.sort((p1, p2) => p1.name.localeCompare(p2.name));
+};
+
+
+/***/ }),
+
+/***/ 611:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.splitByEOL = void 0;
+exports.splitByEOL = (stdout) => {
+    return stdout.split(/[\r\n]/);
 };
 
 
@@ -1663,6 +1675,7 @@ const core = __importStar(__webpack_require__(470));
 const exec = __importStar(__webpack_require__(986));
 const path_1 = __importDefault(__webpack_require__(622));
 const sdk_manager_parser_1 = __webpack_require__(551);
+const utils_1 = __webpack_require__(611);
 class SDKManager {
     constructor() {
         const androidHome = process.env.ANDROID_HOME;
@@ -1672,41 +1685,40 @@ class SDKManager {
         this.sdkManagerPath = `"${path_1.default.join(androidHome, "tools", "bin", "sdkmanager")}"`;
     }
     async install(packageInfo) {
-        let stdout = "";
-        const outputListener = (data) => {
-            stdout += data.toString();
-            sdk_manager_parser_1.splitByEOL(data.toString()).forEach(line => core.debug(line));
-        };
-        const options = {
-            silent: true,
-            ignoreReturnCode: true,
-            listeners: { stdout: outputListener, stderr: outputListener }
-        };
-        const exitCode = await exec.exec(this.sdkManagerPath, [packageInfo.name], options);
-        if (exitCode !== 0) {
-            throw new Error(`'sdkmanager ${packageInfo.name}' has finished with exit code '${exitCode}'`);
-        }
-        if (core.isDebug()) {
-            sdk_manager_parser_1.splitByEOL(stdout).forEach(line => core.debug(line));
-        }
+        await this.run([packageInfo.name], true);
     }
     async getAllPackagesInfo() {
-        let stdout = "";
-        const stdoutListener = (data) => {
-            stdout += data.toString();
-            //splitSDKManagerOutput(data.toString()).forEach(line => core.debug(line));
-        };
-        const options = { silent: true, listeners: { stdout: stdoutListener } };
-        const exitCode = await exec.exec(this.sdkManagerPath, ["--list"], options);
-        if (exitCode !== 0) {
-            throw new Error(`'sdkmanager --list' has finished with exit code '${exitCode}'`);
-        }
+        const stdout = await this.run(["--list"], false);
         const parsedPackages = sdk_manager_parser_1.parseSDKManagerOutput(stdout);
         if (core.isDebug()) {
             //core.debug("Parsed packages:");
             //parsedPackages.forEach(p => core.debug(JSON.stringify(p)));
         }
         return parsedPackages;
+    }
+    async run(args, printOutputInDebug) {
+        let stdout = "";
+        const outputListener = (data) => {
+            stdout += data.toString();
+            if (printOutputInDebug) {
+                utils_1.splitByEOL(data.toString()).map(s => s.trim()).filter(Boolean).forEach(s => core.debug(s));
+            }
+        };
+        const options = {
+            silent: true,
+            ignoreReturnCode: true,
+            failOnStdErr: false,
+            listeners: {
+                stdout: outputListener,
+                stderr: outputListener,
+            },
+        };
+        const exitCode = await exec.exec(this.sdkManagerPath, args, options);
+        if (exitCode !== 0) {
+            const executableName = path_1.default.basename(this.sdkManagerPath);
+            throw new Error(`'${executableName} ${args.join(" ")}' has finished with exit code '${exitCode}'`);
+        }
+        return stdout;
     }
 }
 exports.SDKManager = SDKManager;
@@ -1793,10 +1805,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
 const os = __importStar(__webpack_require__(87));
 const sdk_manager_1 = __webpack_require__(857);
-const sdk_manager_parser_1 = __webpack_require__(551);
+const utils_1 = __webpack_require__(611);
 const getListInput = (inputName) => {
     const value = core.getInput(inputName);
-    return sdk_manager_parser_1.splitByEOL(value).map(s => s.trim()).filter(Boolean);
+    return utils_1.splitByEOL(value).map(s => s.trim()).filter(Boolean);
 };
 const getBooleanInput = (inputName) => {
     return (core.getInput(inputName) || "false").toUpperCase() === "TRUE";

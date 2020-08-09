@@ -1,7 +1,8 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import path from "path";
-import { parseSDKManagerOutput, AndroidPackageInfo, splitByEOL } from "./sdk-manager-parser";
+import { parseSDKManagerOutput, AndroidPackageInfo } from "./sdk-manager-parser";
+import { splitByEOL } from "./utils";
 
 export class SDKManager {
     private sdkManagerPath: string;
@@ -13,37 +14,11 @@ export class SDKManager {
     }
 
     public async install(packageInfo: AndroidPackageInfo): Promise<void> {
-        let stdout = "";
-        const outputListener = (data: Buffer): void => {
-            stdout += data.toString();
-            splitByEOL(data.toString()).forEach(line => core.debug(line));
-        };
-        const options: exec.ExecOptions = {
-            silent: true,
-            ignoreReturnCode: true,
-            listeners: { stdout: outputListener, stderr: outputListener }
-        };
-        const exitCode = await exec.exec(this.sdkManagerPath, [packageInfo.name], options);
-        if (exitCode !== 0) {
-            throw new Error(`'sdkmanager ${packageInfo.name}' has finished with exit code '${exitCode}'`);
-        }
-        if (core.isDebug()) {
-            splitByEOL(stdout).forEach(line => core.debug(line));
-        }
+        await this.run([packageInfo.name], true);
     }
 
     public async getAllPackagesInfo(): Promise<AndroidPackageInfo[]> {
-        let stdout = "";
-        const stdoutListener = (data: Buffer): void => {
-            stdout += data.toString();
-            //splitSDKManagerOutput(data.toString()).forEach(line => core.debug(line));
-        };
-        const options = { silent: true, listeners: { stdout: stdoutListener } };
-        const exitCode = await exec.exec(this.sdkManagerPath, ["--list"], options);
-        if (exitCode !== 0) {
-            throw new Error(`'sdkmanager --list' has finished with exit code '${exitCode}'`);
-        }
-
+        const stdout = await this.run(["--list"], false);
         const parsedPackages = parseSDKManagerOutput(stdout);
         if (core.isDebug()) {
             //core.debug("Parsed packages:");
@@ -51,5 +26,31 @@ export class SDKManager {
         }
 
         return parsedPackages;
+    }
+
+    private async run(args: string[], printOutputInDebug: boolean): Promise<string> {
+        let stdout = "";
+        const outputListener = (data: Buffer): void => {
+            stdout += data.toString();
+            if (printOutputInDebug) {
+                splitByEOL(data.toString()).map(s => s.trim()).filter(Boolean).forEach(s => core.debug(s));
+            }
+        };
+        const options: exec.ExecOptions = {
+            silent: true,
+            ignoreReturnCode: true,
+            failOnStdErr: false,
+            listeners: {
+                stdout: outputListener,
+                stderr: outputListener,
+            },
+        };
+        const exitCode = await exec.exec(this.sdkManagerPath, args, options);
+        if (exitCode !== 0) {
+            const executableName = path.basename(this.sdkManagerPath);
+            throw new Error(`'${executableName} ${args.join(" ")}' has finished with exit code '${exitCode}'`);
+        }
+
+        return stdout;
     }
 }

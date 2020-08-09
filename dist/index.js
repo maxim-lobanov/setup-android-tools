@@ -1697,20 +1697,15 @@ class SDKManager {
         let previousPrintedLine = "";
         const outputListener = (data) => {
             const line = data.toString();
-            if (line.trim().length === 0) {
-                return;
-            }
-            if (line === previousPrintedLine) {
-                return;
-            }
-            core.info("DEBUG");
-            core.info(previousPrintedLine);
-            core.info(line);
             stdout += line;
             if (printOutputInDebug) {
-                utils_1.splitByEOL(line).map(s => s.trim()).filter(Boolean).forEach(s => core.debug(s));
+                utils_1.splitByEOL(line).map(s => s.trim()).filter(Boolean).forEach(s => {
+                    if (previousPrintedLine !== s) {
+                        core.debug(s);
+                        previousPrintedLine = s;
+                    }
+                });
             }
-            previousPrintedLine = line;
         };
         const options = {
             silent: true,
@@ -1721,7 +1716,7 @@ class SDKManager {
                 stderr: outputListener,
             },
         };
-        const commandString = `${this.sdkManagerPath.replace(/\\"/g, " ")} ${args.join(" ")}`;
+        const commandString = `${this.sdkManagerPath.replace(/"/g, " ")} ${args.join(" ")}`;
         console.log(`[command]${commandString}`);
         const exitCode = await exec.exec(this.sdkManagerPath, args, options);
         if (exitCode !== 0) {

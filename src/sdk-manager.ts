@@ -31,22 +31,16 @@ export class SDKManager {
         let previousPrintedLine = "";
         const outputListener = (data: Buffer): void => {
             const line = data.toString();
-            if (line.trim().length === 0) {
-                return;
-            }
-            if (line === previousPrintedLine) {
-                return;
-            }
-
-            core.info("DEBUG");
-            core.info(previousPrintedLine);
-            core.info(line);
-
             stdout += line;
+
             if (printOutputInDebug) {
-                splitByEOL(line).map(s => s.trim()).filter(Boolean).forEach(s => core.debug(s));
+                splitByEOL(line).map(s => s.trim()).filter(Boolean).forEach(s => {
+                    if (previousPrintedLine !== s) {
+                        core.debug(s);
+                        previousPrintedLine = s;
+                    }
+                });
             }
-            previousPrintedLine = line;
         };
         const options: exec.ExecOptions = {
             silent: true,
@@ -57,7 +51,7 @@ export class SDKManager {
                 stderr: outputListener,
             },
         };
-        const commandString = `${this.sdkManagerPath.replace(/\\"/g, " ")} ${args.join(" ")}`;
+        const commandString = `${this.sdkManagerPath.replace(/"/g, " ")} ${args.join(" ")}`;
         console.log(`[command]${commandString}`);
         const exitCode = await exec.exec(this.sdkManagerPath, args, options);
         if (exitCode !== 0) {

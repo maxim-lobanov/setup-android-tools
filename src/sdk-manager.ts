@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import path from "path";
-import { parseSDKManagerOutput, AndroidPackageInfo, splitSDKManagerOutput } from "./sdk-manager-parser";
+import { parseSDKManagerOutput, AndroidPackageInfo, splitByEOL } from "./sdk-manager-parser";
 
 export class SDKManager {
     private sdkManagerPath: string;
@@ -16,7 +16,7 @@ export class SDKManager {
         let stdout = "";
         const outputListener = (data: Buffer): void => {
             stdout += data.toString();
-            splitSDKManagerOutput(data.toString()).forEach(line => core.debug(line));
+            splitByEOL(data.toString()).forEach(line => core.debug(line));
         };
         const options: exec.ExecOptions = {
             silent: true,
@@ -28,7 +28,7 @@ export class SDKManager {
             throw new Error(`'sdkmanager ${packageInfo.name}' has finished with exit code '${exitCode}'`);
         }
         if (core.isDebug()) {
-            splitSDKManagerOutput(stdout).forEach(line => core.debug(line));
+            splitByEOL(stdout).forEach(line => core.debug(line));
         }
     }
 

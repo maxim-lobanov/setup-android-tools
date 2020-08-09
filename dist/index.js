@@ -1321,7 +1321,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseSDKManagerOutput = exports.splitSDKManagerOutput = exports.getNewState = void 0;
+exports.parseSDKManagerOutput = exports.splitByEOL = exports.getNewState = void 0;
 const core = __importStar(__webpack_require__(470));
 exports.getNewState = (line) => {
     if (!/^[\w ]+:$/.test(line)) {
@@ -1338,7 +1338,7 @@ exports.getNewState = (line) => {
             return "None";
     }
 };
-exports.splitSDKManagerOutput = (stdout) => {
+exports.splitByEOL = (stdout) => {
     return stdout.split(/[\r\n]/);
 };
 exports.parseSDKManagerOutput = (stdout) => {
@@ -1354,7 +1354,7 @@ exports.parseSDKManagerOutput = (stdout) => {
             result.push({ ...defaultPackage, ...packet });
         }
     };
-    const lines = exports.splitSDKManagerOutput(stdout);
+    const lines = exports.splitByEOL(stdout);
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
         const line = lines[lineIndex].trim();
         if (line.length === 0) {
@@ -1675,7 +1675,7 @@ class SDKManager {
         let stdout = "";
         const outputListener = (data) => {
             stdout += data.toString();
-            sdk_manager_parser_1.splitSDKManagerOutput(data.toString()).forEach(line => core.debug(line));
+            sdk_manager_parser_1.splitByEOL(data.toString()).forEach(line => core.debug(line));
         };
         const options = {
             silent: true,
@@ -1687,7 +1687,7 @@ class SDKManager {
             throw new Error(`'sdkmanager ${packageInfo.name}' has finished with exit code '${exitCode}'`);
         }
         if (core.isDebug()) {
-            sdk_manager_parser_1.splitSDKManagerOutput(stdout).forEach(line => core.debug(line));
+            sdk_manager_parser_1.splitByEOL(stdout).forEach(line => core.debug(line));
         }
     }
     async getAllPackagesInfo() {
@@ -1792,10 +1792,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
 const sdk_manager_1 = __webpack_require__(857);
-const os_1 = __webpack_require__(87);
+const sdk_manager_parser_1 = __webpack_require__(551);
 const getListInput = (inputName) => {
     const value = core.getInput(inputName);
-    return value.split(os_1.EOL).map(s => s.trim()).filter(Boolean);
+    return sdk_manager_parser_1.splitByEOL(value).map(s => s.trim()).filter(Boolean);
 };
 const getBooleanInput = (inputName) => {
     return (core.getInput(inputName) || "false").toUpperCase() === "TRUE";

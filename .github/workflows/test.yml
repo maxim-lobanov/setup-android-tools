@@ -32,4 +32,4 @@ jobs:
     - name: already-installed
       uses: ./
       with:
-        packages: platforms;android-29
+        packages: platforms;android-30

@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import { getNewState, parseSDKManagerOutput, AndroidPackageInfo, splitSDKManagerOutput } from "../src/sdk-manager-parser";
+import { getNewState, parseSDKManagerOutput, AndroidPackageInfo, splitByEOL } from "../src/sdk-manager-parser";
 
 describe("getNewState", () => {
     it.each([
@@ -17,11 +17,11 @@ describe("getNewState", () => {
     });
 });
 
-describe("splitSDKManagerOutput", () => {
+describe("splitByEOL", () => {
     it("split by \\r \\n", () => {
         const input = "Hello\rworld\nGood morning";
         const expected = ["Hello", "world", "Good morning"];
-        const actual = splitSDKManagerOutput(input);
+        const actual = splitByEOL(input);
         expect(actual).toEqual(expected);
     });
 });

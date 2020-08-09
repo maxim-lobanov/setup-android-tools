@@ -1,10 +1,10 @@
 import * as core from "@actions/core";
 import { SDKManager } from "./sdk-manager";
-import { EOL } from "os";
+import { splitByEOL } from "./sdk-manager-parser";
 
 const getListInput = (inputName: string): string[] => {
     const value = core.getInput(inputName);
-    return value.split(EOL).map(s => s.trim()).filter(Boolean);
+    return splitByEOL(value).map(s => s.trim()).filter(Boolean);
 };
 
 const getBooleanInput = (inputName: string): boolean => {

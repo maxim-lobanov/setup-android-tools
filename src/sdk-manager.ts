@@ -44,7 +44,7 @@ export class SDKManager {
             previousPrintedLine = stdout;
         };
         const options: exec.ExecOptions = {
-            silent: false,
+            silent: true,
             ignoreReturnCode: true,
             failOnStdErr: false,
             listeners: {
@@ -52,10 +52,11 @@ export class SDKManager {
                 stderr: outputListener,
             },
         };
+        const commandString = `${this.sdkManagerPath} ${args.join(" ")}`;
+        core.info(commandString);
         const exitCode = await exec.exec(this.sdkManagerPath, args, options);
         if (exitCode !== 0) {
-            const executableName = path.basename(this.sdkManagerPath);
-            throw new Error(`'${executableName} ${args.join(" ")}' has finished with exit code '${exitCode}'`);
+            throw new Error(`'${commandString}' has finished with exit code '${exitCode}'`);
         }
 
         return stdout;

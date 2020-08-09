@@ -1296,6 +1296,107 @@ exports.getState = getState;
 
 /***/ }),
 
+/***/ 551:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.parseSDKManagerOutput = exports.getNewState = void 0;
+const core = __importStar(__webpack_require__(470));
+const os_1 = __webpack_require__(87);
+exports.getNewState = (line) => {
+    if (!/^[\w ]+:$/.test(line)) {
+        return null;
+    }
+    switch (line) {
+        case "Installed packages:": return "InstalledPackages";
+        case "Available Packages:": return "AvailablePackages";
+        case "Available Updates:": return "AvailableUpdates";
+        default:
+            core.debug(`Unknown state '${line}'`);
+            return "None";
+    }
+};
+exports.parseSDKManagerOutput = (stdout) => {
+    const result = [];
+    let state = "None";
+    const pushPackage = (packet) => {
+        const defaultPackage = { name: packet.name, description: "", version: "", installed: false, update: null };
+        const packageIndex = result.findIndex(p => p.name === packet.name);
+        if (packageIndex >= 0) {
+            result[packageIndex] = { ...result[packageIndex], ...packet };
+        }
+        else {
+            result.push({ ...defaultPackage, ...packet });
+        }
+    };
+    const lines = stdout.split(os_1.EOL);
+    for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+        const line = lines[lineIndex].trim();
+        if (line.length === 0) {
+            state = "None";
+            continue;
+        }
+        const nextState = exports.getNewState(line);
+        if (nextState) {
+            state = nextState;
+            // Skip the next 2 lines: table header and table header delimeter
+            lineIndex += 2;
+            continue;
+        }
+        const cols = line.split("|").filter(Boolean).map(s => s.trim());
+        if (cols[0] === "platforms;android-29") {
+            console.log(line);
+        }
+        if (state === "InstalledPackages") {
+            pushPackage({
+                name: cols[0],
+                version: cols[1],
+                description: cols[2],
+                installed: true
+            });
+        }
+        if (state === "AvailablePackages") {
+            pushPackage({
+                name: cols[0],
+                version: cols[1],
+                description: cols[2]
+            });
+        }
+        else if (state === "AvailableUpdates") {
+            pushPackage({
+                name: cols[0],
+                version: cols[1],
+                update: cols[2],
+            });
+        }
+    }
+    return result.sort((p1, p2) => p1.name.localeCompare(p2.name));
+};
+
+
+/***/ }),
+
 /***/ 614:
 /***/ (function(module) {
 
@@ -1558,6 +1659,7 @@ exports.SDKManager = void 0;
 const core = __importStar(__webpack_require__(470));
 const exec = __importStar(__webpack_require__(986));
 const path_1 = __importDefault(__webpack_require__(622));
+const sdk_manager_parser_1 = __webpack_require__(551);
 class SDKManager {
     constructor() {
         const androidHome = process.env.ANDROID_HOME;
@@ -1565,23 +1667,18 @@ class SDKManager {
             throw new Error("ANDROID_HOME env variable is not defined");
         }
         this.sdkManagerPath = `"${path_1.default.join(androidHome, "tools", "bin", "sdkmanager")}"`;
-        // macOS
-        // SDKMANAGER=$ANDROID_HOME/tools/bin/sdkmanager
-        // Ubuntu
-        // SDKMANAGER=$ANDROID_HOME/tools/bin/sdkmanager
-        // Windows
-        // SDKMANAGER=$ANDROID_HOME\tools\bin\sdkmanager.bat
     }
-    async getPackageInfo(packageName) {
-        let stdout = packageName;
+    async getAllPackagesInfo() {
+        let stdout = "";
         core.info(this.sdkManagerPath);
         const stdoutListener = (data) => { stdout += data.toString(); };
-        const exitCode = await exec.exec(this.sdkManagerPath, ["--list"], { listeners: { stdout: stdoutListener } });
+        const options = { silent: true, listeners: { stdout: stdoutListener } };
+        const exitCode = await exec.exec(this.sdkManagerPath, ["--list"], options);
+        core.debug(stdout);
         if (exitCode !== 0) {
             throw new Error(`'sdkmanager --list' has finished with exit code '${exitCode}'`);
         }
-        core.info(stdout);
-        return null;
+        return sdk_manager_parser_1.parseSDKManagerOutput(stdout);
     }
 }
 exports.SDKManager = SDKManager;
@@ -1669,9 +1766,9 @@ const core = __importStar(__webpack_require__(470));
 const sdk_manager_1 = __webpack_require__(857);
 const run = async () => {
     try {
-        core.info("Hello");
         const sdkmanager = new sdk_manager_1.SDKManager();
-        await sdkmanager.getPackageInfo("");
+        const allPackages = await sdkmanager.getAllPackagesInfo();
+        core.info(JSON.stringify(allPackages));
     }
     catch (error) {
         core.setFailed(error.message);

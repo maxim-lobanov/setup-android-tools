@@ -3,9 +3,9 @@ import { SDKManager } from "./sdk-manager";
 
 const run = async(): Promise<void> => {
     try {
-        core.info("Hello");
         const sdkmanager = new SDKManager();
-        await sdkmanager.getPackageInfo("");
+        const allPackages = await sdkmanager.getAllPackagesInfo();
+        core.info(JSON.stringify(allPackages));
     } catch (error) {
         core.setFailed(error.message);
     }

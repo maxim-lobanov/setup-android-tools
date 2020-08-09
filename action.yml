@@ -6,6 +6,14 @@ inputs:
     description: 'Packages to install'
     required: false
     default: ""
+  cache:
+    description: 'Cache installed packages to speed up workflows'
+    required: false
+    default: 'false'
+  update:
+    description: 'Update package if it is already installed but outdated'
+    required: false
+    default: 'false'
 runs:
   using: 'node12'
   main: 'dist/index.js'

@@ -1392,11 +1392,7 @@ exports.parseSDKManagerOutput = (stdout) => {
             });
         }
     }
-    const sortedPackages = result.sort((p1, p2) => p1.name.localeCompare(p2.name));
-    if (core.isDebug()) {
-        core.debug(`Parsed packages: ${JSON.stringify(sortedPackages)}`);
-    }
-    return sortedPackages;
+    return result.sort((p1, p2) => p1.name.localeCompare(p2.name));
 };
 
 
@@ -1665,6 +1661,7 @@ const core = __importStar(__webpack_require__(470));
 const exec = __importStar(__webpack_require__(986));
 const path_1 = __importDefault(__webpack_require__(622));
 const sdk_manager_parser_1 = __webpack_require__(551);
+const os_1 = __webpack_require__(87);
 class SDKManager {
     constructor() {
         const androidHome = process.env.ANDROID_HOME;
@@ -1675,13 +1672,21 @@ class SDKManager {
     }
     async getAllPackagesInfo() {
         let stdout = "";
-        const stdoutListener = (data) => { stdout += data.toString(); core.debug(data.toString()); };
+        const stdoutListener = (data) => { stdout += data.toString(); };
         const options = { silent: true, listeners: { stdout: stdoutListener } };
         const exitCode = await exec.exec(this.sdkManagerPath, ["--list"], options);
+        if (core.isDebug()) {
+            stdout.split(os_1.EOL).forEach(line => core.debug(line));
+        }
         if (exitCode !== 0) {
             throw new Error(`'sdkmanager --list' has finished with exit code '${exitCode}'`);
         }
-        return sdk_manager_parser_1.parseSDKManagerOutput(stdout);
+        const parsedPackages = sdk_manager_parser_1.parseSDKManagerOutput(stdout);
+        if (core.isDebug()) {
+            core.debug("Parsed packages:");
+            parsedPackages.forEach(p => core.debug(JSON.stringify(p)));
+        }
+        return parsedPackages;
     }
 }
 exports.SDKManager = SDKManager;
@@ -1770,8 +1775,7 @@ const sdk_manager_1 = __webpack_require__(857);
 const run = async () => {
     try {
         const sdkmanager = new sdk_manager_1.SDKManager();
-        const allPackages = await sdkmanager.getAllPackagesInfo();
-        core.info(JSON.stringify(allPackages));
+        await sdkmanager.getAllPackagesInfo();
     }
     catch (error) {
         core.setFailed(error.message);

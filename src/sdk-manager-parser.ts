@@ -84,8 +84,5 @@ export const parseSDKManagerOutput = (stdout: string): AndroidPackageInfo[] => {
         }
     }
 
-    const sortedPackages = result.sort((p1, p2) => p1.name.localeCompare(p2.name));
-    if (core.isDebug()) { core.debug(`Parsed packages: ${JSON.stringify(sortedPackages)}`); }
-    
-    return sortedPackages;
+    return result.sort((p1, p2) => p1.name.localeCompare(p2.name));
 };

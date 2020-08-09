@@ -14,16 +14,16 @@ export class SDKManager {
 
     public async install(packageInfo: AndroidPackageInfo): Promise<void> {
         let stdout = "";
-        const stdoutListener = (data: Buffer): void => {
+        const outputListener = (data: Buffer): void => {
             stdout += data.toString();
             splitSDKManagerOutput(data.toString()).forEach(line => core.debug(line));
         };
         const options: exec.ExecOptions = {
             silent: true,
             ignoreReturnCode: true,
-            listeners: { stdout: stdoutListener }
+            listeners: { stdout: outputListener, stderr: outputListener }
         };
-        const exitCode = await exec.exec(this.sdkManagerPath, [`"${packageInfo.name}"`], options);
+        const exitCode = await exec.exec(this.sdkManagerPath, [packageInfo.name], options);
         if (exitCode !== 0) {
             throw new Error(`'sdkmanager ${packageInfo.name}' has finished with exit code '${exitCode}'`);
         }

@@ -31,9 +31,16 @@ export class SDKManager {
         let previousPrintedLine = "";
         const outputListener = (data: Buffer): void => {
             const line = data.toString();
+            if (line.trim().length === 0) {
+                return;
+            }
             if (line === previousPrintedLine) {
                 return;
             }
+
+            core.info("DEBUG");
+            core.info(previousPrintedLine);
+            core.info(line);
 
             stdout += line;
             if (printOutputInDebug) {
@@ -50,8 +57,8 @@ export class SDKManager {
                 stderr: outputListener,
             },
         };
-        const commandString = `${this.sdkManagerPath.replace("\"", "")} ${args.join(" ")}`;
-        console.log(commandString);
+        const commandString = `${this.sdkManagerPath.replace(/\\"/g, " ")} ${args.join(" ")}`;
+        console.log(`[command]${commandString}`);
         const exitCode = await exec.exec(this.sdkManagerPath, args, options);
         if (exitCode !== 0) {
             throw new Error(`'${commandString}' has finished with exit code '${exitCode}'`);

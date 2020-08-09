@@ -14,11 +14,9 @@ export class SDKManager {
 
     public async getAllPackagesInfo(): Promise<AndroidPackageInfo[]> {
         let stdout = "";
-        core.info(this.sdkManagerPath);
-        const stdoutListener = (data: Buffer): void => { stdout += data.toString(); };
+        const stdoutListener = (data: Buffer): void => { stdout += data.toString(); core.debug(data.toString()) };
         const options = { silent: true, listeners: { stdout: stdoutListener } };
         const exitCode = await exec.exec(this.sdkManagerPath, ["--list"], options);
-        core.debug(stdout);
         if (exitCode !== 0) {
             throw new Error(`'sdkmanager --list' has finished with exit code '${exitCode}'`);
         }

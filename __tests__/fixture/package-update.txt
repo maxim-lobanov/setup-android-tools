@@ -1,0 +1,18 @@
+Loading package information...
+
+Installed packages:
+  Path   | Version   | Description   | Location  
+  -------   | -------   | -------   | -------
+  platforms;android-29 | 4 |  Android Platform Tools 29 | platforms\\android-29\\
+  build-tools;28.0.2   | 28.0.2   | Android SDK Build-Tools 28.0.2   | build-tools\\28.0.2\\
+Available Packages:
+  Path  | Version   | Description   
+  -------   | -------   | -------  
+  ndk-bundle   | 21.3.6528147 | NDK
+  platforms;android-29 | 5 |  Android Platform Tools 29 
+  build-tools;28.0.2   | 28.0.2   | Android SDK Build-Tools 28.0.2 
+
+Available Updates:
+  ID                   | Installed | Available
+  -------              | -------   | -------  
+  platforms;android-29 | 4         | 5        

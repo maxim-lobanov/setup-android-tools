@@ -3,10 +3,11 @@ import { EOL } from "os";
 
 export interface AndroidPackageInfo {
     name: string;
-    version: string;
+    localVersion: string;
+    remoteVersion: string;
     description: string;
     installed: boolean;
-    update: string | null;
+    update: boolean;
 }
 
 export type ParserState = "InstalledPackages" | "AvailablePackages" | "AvailableUpdates" | "None";
@@ -20,7 +21,9 @@ export const getNewState = (line: string): ParserState | null => {
     case "Installed packages:": return "InstalledPackages";
     case "Available Packages:": return "AvailablePackages";
     case "Available Updates:": return "AvailableUpdates";
-    default: core.debug(`Unknown state '${line}'`); return "None";
+    default:
+        if (core.isDebug()) { core.debug(`Unknown state '${line}'`); }
+        return "None";
     }
 };
 
@@ -30,7 +33,7 @@ export const parseSDKManagerOutput = (stdout: string): AndroidPackageInfo[] => {
     let state: ParserState = "None";
 
     const pushPackage = (packet: Partial<AndroidPackageInfo> & Pick<AndroidPackageInfo, "name">): void => {
-        const defaultPackage: AndroidPackageInfo = { name: packet.name, description: "", version: "", installed: false, update: null };
+        const defaultPackage: AndroidPackageInfo = { name: packet.name, description: "", localVersion: "", remoteVersion: "", installed: false, update: false };
         const packageIndex = result.findIndex(p => p.name === packet.name);
         if (packageIndex >= 0) {
             result[packageIndex] = { ...result[packageIndex], ...packet };
@@ -56,13 +59,10 @@ export const parseSDKManagerOutput = (stdout: string): AndroidPackageInfo[] => {
         }
 
         const cols = line.split("|").filter(Boolean).map(s => s.trim());
-        if (cols[0] === "platforms;android-29") {
-            console.log(line);
-        }
         if (state === "InstalledPackages") {
             pushPackage({
                 name: cols[0],
-                version: cols[1],
+                localVersion: cols[1],
                 description: cols[2],
                 installed: true
             });
@@ -70,17 +70,22 @@ export const parseSDKManagerOutput = (stdout: string): AndroidPackageInfo[] => {
         if (state === "AvailablePackages") {
             pushPackage({
                 name: cols[0],
-                version: cols[1],
+                remoteVersion: cols[1],
                 description: cols[2]
             });
         } else if (state === "AvailableUpdates") {
             pushPackage({
                 name: cols[0],
-                version: cols[1],
-                update: cols[2],
+                localVersion: cols[1],
+                remoteVersion: cols[2],
+                installed: true,
+                update: true
             });
         }
     }
 
-    return result.sort((p1, p2) => p1.name.localeCompare(p2.name));
+    const sortedPackages = result.sort((p1, p2) => p1.name.localeCompare(p2.name));
+    if (core.isDebug()) { core.debug(`Parsed packages: ${JSON.stringify(sortedPackages)}`); }
+    
+    return sortedPackages;
 };

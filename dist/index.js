@@ -1333,7 +1333,9 @@ exports.getNewState = (line) => {
         case "Available Packages:": return "AvailablePackages";
         case "Available Updates:": return "AvailableUpdates";
         default:
-            core.debug(`Unknown state '${line}'`);
+            if (core.isDebug()) {
+                core.debug(`Unknown state '${line}'`);
+            }
             return "None";
     }
 };
@@ -1341,7 +1343,7 @@ exports.parseSDKManagerOutput = (stdout) => {
     const result = [];
     let state = "None";
     const pushPackage = (packet) => {
-        const defaultPackage = { name: packet.name, description: "", version: "", installed: false, update: null };
+        const defaultPackage = { name: packet.name, description: "", localVersion: "", remoteVersion: "", installed: false, update: false };
         const packageIndex = result.findIndex(p => p.name === packet.name);
         if (packageIndex >= 0) {
             result[packageIndex] = { ...result[packageIndex], ...packet };
@@ -1365,13 +1367,10 @@ exports.parseSDKManagerOutput = (stdout) => {
             continue;
         }
         const cols = line.split("|").filter(Boolean).map(s => s.trim());
-        if (cols[0] === "platforms;android-29") {
-            console.log(line);
-        }
         if (state === "InstalledPackages") {
             pushPackage({
                 name: cols[0],
-                version: cols[1],
+                localVersion: cols[1],
                 description: cols[2],
                 installed: true
             });
@@ -1379,19 +1378,25 @@ exports.parseSDKManagerOutput = (stdout) => {
         if (state === "AvailablePackages") {
             pushPackage({
                 name: cols[0],
-                version: cols[1],
+                remoteVersion: cols[1],
                 description: cols[2]
             });
         }
         else if (state === "AvailableUpdates") {
             pushPackage({
                 name: cols[0],
-                version: cols[1],
-                update: cols[2],
+                localVersion: cols[1],
+                remoteVersion: cols[2],
+                installed: true,
+                update: true
             });
         }
     }
-    return result.sort((p1, p2) => p1.name.localeCompare(p2.name));
+    const sortedPackages = result.sort((p1, p2) => p1.name.localeCompare(p2.name));
+    if (core.isDebug()) {
+        core.debug(`Parsed packages: ${JSON.stringify(sortedPackages)}`);
+    }
+    return sortedPackages;
 };
 
 
@@ -1670,11 +1675,9 @@ class SDKManager {
     }
     async getAllPackagesInfo() {
         let stdout = "";
-        core.info(this.sdkManagerPath);
-        const stdoutListener = (data) => { stdout += data.toString(); };
+        const stdoutListener = (data) => { stdout += data.toString(); core.debug(data.toString()); };
         const options = { silent: true, listeners: { stdout: stdoutListener } };
         const exitCode = await exec.exec(this.sdkManagerPath, ["--list"], options);
-        core.debug(stdout);
         if (exitCode !== 0) {
             throw new Error(`'sdkmanager --list' has finished with exit code '${exitCode}'`);
         }

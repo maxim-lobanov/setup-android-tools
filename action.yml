@@ -10,7 +10,7 @@ inputs:
     description: 'Cache installed packages to speed up workflows'
     required: false
     default: 'false'
-  update: 
+  update:
     description: 'Update package if it is already installed but outdated'
     required: false
     default: 'false'

@@ -1,0 +1,11 @@
+name: 'Setup Android tools'
+author: 'Maxim Lobanov'
+description: 'Set up Android tools in GitHub Actions workflow with cache'
+inputs:
+  packages:
+    description: 'Packages to install'
+    required: false
+    default: ""
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

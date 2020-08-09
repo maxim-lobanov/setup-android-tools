@@ -1321,9 +1321,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseSDKManagerOutput = exports.getNewState = void 0;
+exports.parseSDKManagerOutput = exports.splitSDKManagerOutput = exports.getNewState = void 0;
 const core = __importStar(__webpack_require__(470));
-const os_1 = __webpack_require__(87);
 exports.getNewState = (line) => {
     if (!/^[\w ]+:$/.test(line)) {
         return null;
@@ -1339,6 +1338,9 @@ exports.getNewState = (line) => {
             return "None";
     }
 };
+exports.splitSDKManagerOutput = (stdout) => {
+    return stdout.split(/[\r\n]/);
+};
 exports.parseSDKManagerOutput = (stdout) => {
     const result = [];
     let state = "None";
@@ -1352,7 +1354,7 @@ exports.parseSDKManagerOutput = (stdout) => {
             result.push({ ...defaultPackage, ...packet });
         }
     };
-    const lines = stdout.split(os_1.EOL);
+    const lines = exports.splitSDKManagerOutput(stdout);
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
         const line = lines[lineIndex].trim();
         if (line.length === 0) {
@@ -1661,7 +1663,6 @@ const core = __importStar(__webpack_require__(470));
 const exec = __importStar(__webpack_require__(986));
 const path_1 = __importDefault(__webpack_require__(622));
 const sdk_manager_parser_1 = __webpack_require__(551);
-const os_1 = __webpack_require__(87);
 class SDKManager {
     constructor() {
         const androidHome = process.env.ANDROID_HOME;
@@ -1676,7 +1677,7 @@ class SDKManager {
         const options = { silent: true, listeners: { stdout: stdoutListener } };
         const exitCode = await exec.exec(this.sdkManagerPath, ["--list"], options);
         if (core.isDebug()) {
-            stdout.split(os_1.EOL).forEach(line => core.debug(line));
+            sdk_manager_parser_1.splitSDKManagerOutput(stdout).forEach(line => core.debug(line));
         }
         if (exitCode !== 0) {
             throw new Error(`'sdkmanager --list' has finished with exit code '${exitCode}'`);

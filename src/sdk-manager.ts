@@ -1,8 +1,7 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import path from "path";
-import { parseSDKManagerOutput, AndroidPackageInfo } from "./sdk-manager-parser";
-import { EOL } from "os";
+import { parseSDKManagerOutput, AndroidPackageInfo, splitSDKManagerOutput } from "./sdk-manager-parser";
 
 export class SDKManager {
     private sdkManagerPath: string;
@@ -19,7 +18,7 @@ export class SDKManager {
         const options = { silent: true, listeners: { stdout: stdoutListener } };
         const exitCode = await exec.exec(this.sdkManagerPath, ["--list"], options);
         if (core.isDebug()) {
-            stdout.split(EOL).forEach(line => core.debug(line));
+            splitSDKManagerOutput(stdout).forEach(line => core.debug(line));
         }
         if (exitCode !== 0) {
             throw new Error(`'sdkmanager --list' has finished with exit code '${exitCode}'`);

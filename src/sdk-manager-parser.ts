@@ -1,5 +1,4 @@
 import * as core from "@actions/core";
-import { EOL } from "os";
 
 export interface AndroidPackageInfo {
     name: string;
@@ -27,6 +26,10 @@ export const getNewState = (line: string): ParserState | null => {
     }
 };
 
+export const splitSDKManagerOutput = (stdout: string): string[] => {
+    return stdout.split(/[\r\n]/);
+};
+
 export const parseSDKManagerOutput = (stdout: string): AndroidPackageInfo[] => {
     const result: AndroidPackageInfo[] = [];
 
@@ -42,7 +45,7 @@ export const parseSDKManagerOutput = (stdout: string): AndroidPackageInfo[] => {
         }
     };
 
-    const lines = stdout.split(EOL);
+    const lines = splitSDKManagerOutput(stdout);
     for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
         const line = lines[lineIndex].trim();
         if (line.length === 0) {

@@ -32,6 +32,7 @@ export class SDKManager {
         }
         core.info(stdout);
 
+
         return null;
     }
 }

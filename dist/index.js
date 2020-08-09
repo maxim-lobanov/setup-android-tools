@@ -1574,6 +1574,7 @@ class SDKManager {
     }
     async getPackageInfo(packageName) {
         let stdout = packageName;
+        core.info(this.sdkManagerPath);
         const stdoutListener = (data) => { stdout += data.toString(); };
         const exitCode = await exec.exec(this.sdkManagerPath, ["--list"], { listeners: { stdout: stdoutListener } });
         if (exitCode !== 0) {

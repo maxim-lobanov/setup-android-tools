@@ -1672,9 +1672,15 @@ class SDKManager {
         this.sdkManagerPath = `"${path_1.default.join(androidHome, "tools", "bin", "sdkmanager")}"`;
     }
     async install(packageInfo) {
-        const exitCode = await exec.exec(this.sdkManagerPath, [packageInfo.name]);
+        let stdout = "";
+        const stdoutListener = (data) => { stdout += data.toString(); };
+        const options = { silent: true, listeners: { stdout: stdoutListener } };
+        const exitCode = await exec.exec(this.sdkManagerPath, [`"${packageInfo.name}"`], options);
         if (exitCode !== 0) {
             throw new Error(`'sdkmanager ${packageInfo.name}' has finished with exit code '${exitCode}'`);
+        }
+        if (core.isDebug()) {
+            sdk_manager_parser_1.splitSDKManagerOutput(stdout).forEach(line => core.debug(line));
         }
     }
     async getAllPackagesInfo() {

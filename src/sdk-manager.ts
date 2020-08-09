@@ -7,9 +7,7 @@ import { splitByEOL } from "./utils";
 export class SDKManager {
     private sdkManagerPath: string;
 
-    constructor() {
-        const androidHome = process.env.ANDROID_HOME;
-        if (!androidHome) { throw new Error("ANDROID_HOME env variable is not defined"); }
+    constructor(androidHome: string) {
         this.sdkManagerPath = `"${path.join(androidHome, "tools", "bin", "sdkmanager")}"`;
     }
 
@@ -37,11 +35,11 @@ export class SDKManager {
                 return;
             }
 
-            stdout += data.toString();
+            stdout += line;
             if (printOutputInDebug) {
-                splitByEOL(data.toString()).map(s => s.trim()).filter(Boolean).forEach(s => core.debug(s));
+                splitByEOL(line).map(s => s.trim()).filter(Boolean).forEach(s => core.debug(s));
             }
-            previousPrintedLine = stdout;
+            previousPrintedLine = line;
         };
         const options: exec.ExecOptions = {
             silent: true,

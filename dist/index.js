@@ -1677,11 +1677,7 @@ const path_1 = __importDefault(__webpack_require__(622));
 const sdk_manager_parser_1 = __webpack_require__(551);
 const utils_1 = __webpack_require__(611);
 class SDKManager {
-    constructor() {
-        const androidHome = process.env.ANDROID_HOME;
-        if (!androidHome) {
-            throw new Error("ANDROID_HOME env variable is not defined");
-        }
+    constructor(androidHome) {
         this.sdkManagerPath = `"${path_1.default.join(androidHome, "tools", "bin", "sdkmanager")}"`;
     }
     async install(packageInfo) {
@@ -1704,11 +1700,11 @@ class SDKManager {
             if (line === previousPrintedLine) {
                 return;
             }
-            stdout += data.toString();
+            stdout += line;
             if (printOutputInDebug) {
-                utils_1.splitByEOL(data.toString()).map(s => s.trim()).filter(Boolean).forEach(s => core.debug(s));
+                utils_1.splitByEOL(line).map(s => s.trim()).filter(Boolean).forEach(s => core.debug(s));
             }
-            previousPrintedLine = stdout;
+            previousPrintedLine = line;
         };
         const options = {
             silent: true,
@@ -1810,6 +1806,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
+const exec = __importStar(__webpack_require__(986));
 const os = __importStar(__webpack_require__(87));
 const sdk_manager_1 = __webpack_require__(857);
 const utils_1 = __webpack_require__(611);
@@ -1825,11 +1822,15 @@ const run = async () => {
         const packagesToInstall = getListInput("packages");
         const cache = getBooleanInput("cache");
         core.debug(String(cache));
-        if (os.platform() === "linux") {
-            // fix permissions
-            // sudo chmod -R a+rwx ${ANDROID_HOME}/ndk
+        const androidHome = process.env.ANDROID_HOME;
+        if (!androidHome) {
+            throw new Error("ANDROID_HOME env variable is not defined");
         }
-        const sdkmanager = new sdk_manager_1.SDKManager();
+        if (os.platform() === "linux") {
+            // fix permissions for ANDROID HOME on Hosted Ubuntu images
+            await exec.exec("sudo", ["chmod", "-R", "a+rwx", androidHome]);
+        }
+        const sdkmanager = new sdk_manager_1.SDKManager(androidHome);
         const packages = await sdkmanager.getAllPackagesInfo();
         for (const packageName of packagesToInstall) {
             const foundPackage = packages.find(p => p.name === packageName);

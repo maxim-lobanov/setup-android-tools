@@ -1,4 +1,5 @@
 import * as core from "@actions/core";
+import * as exec from "@actions/exec";
 import * as os from "os";
 import { SDKManager } from "./sdk-manager";
 import { splitByEOL } from "./utils";
@@ -18,12 +19,15 @@ const run = async(): Promise<void> => {
         const cache = getBooleanInput("cache");
         core.debug(String(cache));
 
+        const androidHome = process.env.ANDROID_HOME;
+        if (!androidHome) { throw new Error("ANDROID_HOME env variable is not defined"); }
+
         if (os.platform() === "linux") {
-            // fix permissions
-            // sudo chmod -R a+rwx ${ANDROID_HOME}/ndk
+            // fix permissions for ANDROID HOME on Hosted Ubuntu images
+            await exec.exec("sudo", ["chmod", "-R", "a+rwx", androidHome]);
         }
 
-        const sdkmanager = new SDKManager();
+        const sdkmanager = new SDKManager(androidHome);
         const packages = await sdkmanager.getAllPackagesInfo();
         for (const packageName of packagesToInstall) {
             const foundPackage = packages.find(p => p.name === packageName);

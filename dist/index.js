@@ -1791,6 +1791,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
+const os = __importStar(__webpack_require__(87));
 const sdk_manager_1 = __webpack_require__(857);
 const sdk_manager_parser_1 = __webpack_require__(551);
 const getListInput = (inputName) => {
@@ -1805,15 +1806,19 @@ const run = async () => {
         const packagesToInstall = getListInput("packages");
         const cache = getBooleanInput("cache");
         core.debug(String(cache));
+        if (os.platform() === "linux") {
+            // fix permissions
+            // sudo chmod -R a+rwx ${ANDROID_HOME}/ndk
+        }
         const sdkmanager = new sdk_manager_1.SDKManager();
         const packages = await sdkmanager.getAllPackagesInfo();
-        packagesToInstall.forEach(packageName => {
+        for (const packageName of packagesToInstall) {
             const foundPackage = packages.find(p => p.name === packageName);
             if (!foundPackage) {
                 throw new Error(`Package '${packageName}' is not available. Enable debug output for more details.`);
             }
-            sdkmanager.install(foundPackage);
-        });
+            await sdkmanager.install(foundPackage);
+        }
     }
     catch (error) {
         core.setFailed(error.message);

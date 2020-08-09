@@ -1,4 +1,5 @@
 import * as core from "@actions/core";
+import * as os from "os";
 import { SDKManager } from "./sdk-manager";
 import { splitByEOL } from "./sdk-manager-parser";
 
@@ -17,16 +18,21 @@ const run = async(): Promise<void> => {
         const cache = getBooleanInput("cache");
         core.debug(String(cache));
 
+        if (os.platform() === "linux") {
+            // fix permissions
+            // sudo chmod -R a+rwx ${ANDROID_HOME}/ndk
+        }
+
         const sdkmanager = new SDKManager();
         const packages = await sdkmanager.getAllPackagesInfo();
-        packagesToInstall.forEach(packageName => {
+        for (const packageName of packagesToInstall) {
             const foundPackage = packages.find(p => p.name === packageName);
             if (!foundPackage) {
                 throw new Error(`Package '${packageName}' is not available. Enable debug output for more details.`);
             }
 
-            sdkmanager.install(foundPackage);
-        });
+            await sdkmanager.install(foundPackage);
+        }
     } catch (error) {
         core.setFailed(error.message);
     }

@@ -30,14 +30,21 @@ export class SDKManager {
 
     private async run(args: string[], printOutputInDebug: boolean): Promise<string> {
         let stdout = "";
+        let previousPrintedLine = "";
         const outputListener = (data: Buffer): void => {
+            const line = data.toString();
+            if (line === previousPrintedLine) {
+                return;
+            }
+
             stdout += data.toString();
             if (printOutputInDebug) {
                 splitByEOL(data.toString()).map(s => s.trim()).filter(Boolean).forEach(s => core.debug(s));
             }
+            previousPrintedLine = stdout;
         };
         const options: exec.ExecOptions = {
-            silent: true,
+            silent: false,
             ignoreReturnCode: true,
             failOnStdErr: false,
             listeners: {

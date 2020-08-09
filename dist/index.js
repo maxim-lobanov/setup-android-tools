@@ -1698,14 +1698,20 @@ class SDKManager {
     }
     async run(args, printOutputInDebug) {
         let stdout = "";
+        let previousPrintedLine = "";
         const outputListener = (data) => {
+            const line = data.toString();
+            if (line === previousPrintedLine) {
+                return;
+            }
             stdout += data.toString();
             if (printOutputInDebug) {
                 utils_1.splitByEOL(data.toString()).map(s => s.trim()).filter(Boolean).forEach(s => core.debug(s));
             }
+            previousPrintedLine = stdout;
         };
         const options = {
-            silent: true,
+            silent: false,
             ignoreReturnCode: true,
             failOnStdErr: false,
             listeners: {

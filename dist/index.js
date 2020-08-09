@@ -1677,7 +1677,11 @@ class SDKManager {
             stdout += data.toString();
             sdk_manager_parser_1.splitSDKManagerOutput(data.toString()).forEach(line => core.debug(line));
         };
-        const options = { silent: true, listeners: { stdout: stdoutListener } };
+        const options = {
+            silent: true,
+            ignoreReturnCode: true,
+            listeners: { stdout: stdoutListener }
+        };
         const exitCode = await exec.exec(this.sdkManagerPath, [`"${packageInfo.name}"`], options);
         if (exitCode !== 0) {
             throw new Error(`'sdkmanager ${packageInfo.name}' has finished with exit code '${exitCode}'`);
@@ -1690,7 +1694,7 @@ class SDKManager {
         let stdout = "";
         const stdoutListener = (data) => {
             stdout += data.toString();
-            sdk_manager_parser_1.splitSDKManagerOutput(data.toString()).forEach(line => core.debug(line));
+            //splitSDKManagerOutput(data.toString()).forEach(line => core.debug(line));
         };
         const options = { silent: true, listeners: { stdout: stdoutListener } };
         const exitCode = await exec.exec(this.sdkManagerPath, ["--list"], options);
@@ -1699,8 +1703,8 @@ class SDKManager {
         }
         const parsedPackages = sdk_manager_parser_1.parseSDKManagerOutput(stdout);
         if (core.isDebug()) {
-            core.debug("Parsed packages:");
-            parsedPackages.forEach(p => core.debug(JSON.stringify(p)));
+            //core.debug("Parsed packages:");
+            //parsedPackages.forEach(p => core.debug(JSON.stringify(p)));
         }
         return parsedPackages;
     }

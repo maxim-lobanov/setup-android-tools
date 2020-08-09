@@ -35,7 +35,7 @@ const run = async(): Promise<void> => {
             }
 
             if (foundPackage.installed && !foundPackage.update) {
-                core.info(`  Package '${foundPackage.name}' is already installed and update is not required`);
+                core.info(`Package '${foundPackage.name}' is already installed and update is not required`);
                 continue;
             }
 

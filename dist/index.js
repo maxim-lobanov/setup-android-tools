@@ -1687,8 +1687,8 @@ class SDKManager {
         const stdout = await this.run(["--list"], false);
         const parsedPackages = sdk_manager_parser_1.parseSDKManagerOutput(stdout);
         if (core.isDebug()) {
-            //core.debug("Parsed packages:");
-            //parsedPackages.forEach(p => core.debug(JSON.stringify(p)));
+            core.debug("Available packages:");
+            parsedPackages.forEach(p => core.debug(JSON.stringify(p)));
         }
         return parsedPackages;
     }
@@ -1838,7 +1838,7 @@ const run = async () => {
                 throw new Error(`  Package '${packageName}' is not available. Enable debug output for more details.`);
             }
             if (foundPackage.installed && !foundPackage.update) {
-                core.info(`  Package '${foundPackage.name}' is already installed and update is not required`);
+                core.info(`Package '${foundPackage.name}' is already installed and update is not required`);
                 continue;
             }
             await sdkmanager.install(foundPackage);

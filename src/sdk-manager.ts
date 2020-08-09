@@ -19,8 +19,8 @@ export class SDKManager {
         const stdout = await this.run(["--list"], false);
         const parsedPackages = parseSDKManagerOutput(stdout);
         if (core.isDebug()) {
-            //core.debug("Parsed packages:");
-            //parsedPackages.forEach(p => core.debug(JSON.stringify(p)));
+            core.debug("Available packages:");
+            parsedPackages.forEach(p => core.debug(JSON.stringify(p)));
         }
 
         return parsedPackages;

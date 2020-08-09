@@ -33,3 +33,8 @@ jobs:
       uses: ./
       with:
         packages: platforms;android-30
+
+    - name: invalid-package
+      uses: ./
+      with:
+        packages: platforms;android-35

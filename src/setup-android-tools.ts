@@ -9,30 +9,34 @@ const getListInput = (inputName: string): string[] => {
     return splitByEOL(value).map(s => s.trim()).filter(Boolean);
 };
 
-const getBooleanInput = (inputName: string): boolean => {
-    return (core.getInput(inputName) || "false").toUpperCase() === "TRUE";
+const patchUbuntuPermissions = async(androidHome: string): Promise<void> => {
+    core.info("Patch permissions for $ANDROID_HOME on Ubuntu");
+    await exec.exec("sudo", ["chmod", "-R", "a+rwx", androidHome]);
 };
 
 const run = async(): Promise<void> => {
     try {
-        const packagesToInstall = getListInput("packages");
-        const cache = getBooleanInput("cache");
-        core.debug(String(cache));
-
         const androidHome = process.env.ANDROID_HOME;
         if (!androidHome) { throw new Error("ANDROID_HOME env variable is not defined"); }
 
         if (os.platform() === "linux") {
-            // fix permissions for ANDROID HOME on Hosted Ubuntu images
-            await exec.exec("sudo", ["chmod", "-R", "a+rwx", androidHome]);
+            await patchUbuntuPermissions(androidHome);
         }
 
         const sdkmanager = new SDKManager(androidHome);
-        const packages = await sdkmanager.getAllPackagesInfo();
-        for (const packageName of packagesToInstall) {
-            const foundPackage = packages.find(p => p.name === packageName);
+        const allPackages = await sdkmanager.getAllPackagesInfo();
+
+        const packages = getListInput("packages");
+        for (const packageName of packages) {
+            core.info(`Installing '${packageName}'...`);
+            const foundPackage = allPackages.find(p => p.name === packageName);
             if (!foundPackage) {
-                throw new Error(`Package '${packageName}' is not available. Enable debug output for more details.`);
+                throw new Error(`  Package '${packageName}' is not available. Enable debug output for more details.`);
+            }
+
+            if (foundPackage.installed && !foundPackage.update) {
+                core.info(`  Package '${foundPackage.name}' is already installed and update is not required`);
+                continue;
             }
 
             await sdkmanager.install(foundPackage);

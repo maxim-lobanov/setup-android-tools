@@ -5,10 +5,6 @@ inputs:
   packages:
     description: 'Packages to install'
     required: true
-  cache:
-    description: 'Cache installed packages to speed up workflows'
-    required: false
-    default: 'false'
 runs:
   using: 'node12'
   main: 'dist/index.js'

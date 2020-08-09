@@ -51,7 +51,7 @@ export class SDKManager {
                 stderr: outputListener,
             },
         };
-        const commandString = `${this.sdkManagerPath.replace(/"/g, " ")} ${args.join(" ")}`;
+        const commandString = `${this.sdkManagerPath.replace(/"/g, "")} ${args.join(" ")}`;
         console.log(`[command]${commandString}`);
         const exitCode = await exec.exec(this.sdkManagerPath, args, options);
         if (exitCode !== 0) {

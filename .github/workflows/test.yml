@@ -6,8 +6,8 @@ on:
     - cron: 0 0 * * *
 
 jobs:
-  android-tools:
-    name: android-tools
+  task:
+    name: task
     strategy:
       matrix:
         operating-system: [ubuntu-latest, windows-latest, macos-latest]
@@ -18,22 +18,45 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: setup-android-tools
+    - name: setup ndk
       uses: ./
       with:
         packages: ndk;19.2.5345600
         cache: ${{ matrix.cache }}
     
-    - name: setup-anroid-tools-2
+    - name: setup system-images
       uses: ./
       with:
         packages: |
-          sources;android-28
-          sources;android-29
+          ndk-bundle
+          system-images;android-30;google_apis;x86
+          system-images;android-30;google_apis;x86_64
         cache: ${{ matrix.cache }}
 
-    - name: already-installed
+    - name: setup components
+      uses: ./
+      with:
+        packages: |
+          platforms;android-20
+          add-ons;addon-google_apis-google-19
+          extras;m2repository;com;android;support;constraint;constraint-layout-solver;1.0.0-alpha8
+          extras;google;webdriver
+
+  already-installed:
+    name: 'Check that installed tools are not re-installed'
+    strategy:
+      matrix:
+        operating-system: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.operating-system }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: setup platforms;android-30
       uses: ./
       with:
         packages: platforms;android-30
-        cache: ${{ matrix.cache }}
+    - name: setup ndk-bundle
+      uses: ./
+      with:
+        packages: ndk-bundle

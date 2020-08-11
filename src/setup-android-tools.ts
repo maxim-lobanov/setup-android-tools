@@ -36,7 +36,7 @@ const run = async(): Promise<void> => {
                 continue;
             }
 
-            const cacheKey = `${foundPackage.name} ${foundPackage.remoteVersion}`;
+            const cacheKey = `${foundPackage.name} ${foundPackage.remoteVersion}/1`;
             const localPackagePath = sdkmanager.getPackagePath(foundPackage);
 
             let cacheHit = false;
@@ -60,6 +60,10 @@ const run = async(): Promise<void> => {
             core.info("Trying to download package via sdkmanager...");
             await sdkmanager.install(foundPackage);
             core.info(`  Package '${foundPackage.name}' is downloaded and installed`);
+
+            if (!sdkmanager.isPackageInstalled(foundPackage)) {
+                throw new Error(`Package '${packageName}' was not installed properly. '${localPackagePath}' folder is empty and doesn't exist`);
+            }
 
             if (enableCache) {
                 core.info("Saving package to cache...");

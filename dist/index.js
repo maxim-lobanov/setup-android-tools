@@ -1692,6 +1692,10 @@ class SDKManager {
         }
         return parsedPackages;
     }
+    getPackagePath(packageInfo) {
+        const relativePath = packageInfo.name.replace(";", "/");
+        return path_1.default.join(this.sdkManagerPath, relativePath);
+    }
     async run(args, printOutputInDebug) {
         let stdout = "";
         let previousPrintedLine = "";
@@ -1809,6 +1813,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
 const exec = __importStar(__webpack_require__(986));
 const os = __importStar(__webpack_require__(87));
+const fs = __importStar(__webpack_require__(747));
 const sdk_manager_1 = __webpack_require__(857);
 const utils_1 = __webpack_require__(611);
 const getListInput = (inputName) => {
@@ -1842,6 +1847,10 @@ const run = async () => {
                 continue;
             }
             await sdkmanager.install(foundPackage);
+            const localPackagePath = sdkmanager.getPackagePath(foundPackage);
+            console.log(localPackagePath);
+            console.log(fs.existsSync(localPackagePath));
+            console.log(fs.readdirSync(localPackagePath).join(", "));
         }
     }
     catch (error) {

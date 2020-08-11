@@ -26,6 +26,11 @@ export class SDKManager {
         return parsedPackages;
     }
 
+    public getPackagePath(packageInfo: AndroidPackageInfo): string {
+        const relativePath = packageInfo.name.replace(";", "/");
+        return path.join(this.sdkManagerPath, relativePath);
+    }
+
     private async run(args: string[], printOutputInDebug: boolean): Promise<string> {
         let stdout = "";
         let previousPrintedLine = "";

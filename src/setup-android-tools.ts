@@ -1,6 +1,7 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as os from "os";
+import * as fs from "fs";
 import { SDKManager } from "./sdk-manager";
 import { splitByEOL } from "./utils";
 
@@ -40,6 +41,11 @@ const run = async(): Promise<void> => {
             }
 
             await sdkmanager.install(foundPackage);
+
+            const localPackagePath = sdkmanager.getPackagePath(foundPackage);
+            console.log(localPackagePath);
+            console.log(fs.existsSync(localPackagePath));
+            console.log(fs.readdirSync(localPackagePath).join(", "));
         }
     } catch (error) {
         core.setFailed(error.message);

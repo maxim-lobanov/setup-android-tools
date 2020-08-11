@@ -3,7 +3,7 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as os from "os";
 import { SDKManager } from "./sdk-manager";
-import { getListInput, getBooleanInput, isEmptyDirectory } from "./utils";
+import { getListInput, getBooleanInput } from "./utils";
 
 const patchUbuntuPermissions = async(androidHome: string): Promise<void> => {
     core.info("Patch permissions for $ANDROID_HOME on Ubuntu");
@@ -44,7 +44,7 @@ const run = async(): Promise<void> => {
                 core.info("Trying to restore package from cache...");
                 const cacheHitKey = await cache.restoreCache([localPackagePath], cacheKey);
                 cacheHit = Boolean(cacheHitKey);
-                if (cacheHit && isEmptyDirectory(localPackagePath)) {
+                if (cacheHit && !sdkmanager.isPackageInstalled(foundPackage)) {
                     core.debug("  [WARNING] Cache is invalid and contains empty folder. ");
                     cacheHit = false;
                 }

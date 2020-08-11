@@ -36236,9 +36236,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isEmptyDirectory = exports.getBooleanInput = exports.getListInput = exports.splitByEOL = void 0;
+exports.getBooleanInput = exports.getListInput = exports.splitByEOL = void 0;
 const core = __importStar(__webpack_require__(470));
-const fs = __importStar(__webpack_require__(747));
 exports.splitByEOL = (stdout) => {
     return stdout.split(/[\r\n]/);
 };
@@ -36248,10 +36247,6 @@ exports.getListInput = (inputName) => {
 };
 exports.getBooleanInput = (inputName) => {
     return (core.getInput(inputName) || "false").toUpperCase() === "TRUE";
-};
-exports.isEmptyDirectory = (directoryPath) => {
-    const children = fs.readdirSync(directoryPath);
-    return children.length === 0;
 };
 
 
@@ -42050,6 +42045,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SDKManager = void 0;
 const core = __importStar(__webpack_require__(470));
 const exec = __importStar(__webpack_require__(986));
+const fs = __importStar(__webpack_require__(747));
 const path_1 = __importDefault(__webpack_require__(622));
 const sdk_manager_parser_1 = __webpack_require__(551);
 const utils_1 = __webpack_require__(611);
@@ -42073,6 +42069,13 @@ class SDKManager {
     getPackagePath(packageInfo) {
         const relativePath = packageInfo.name.replace(";", "/");
         return path_1.default.join(this.androidHome, relativePath);
+    }
+    isPackageInstalled(packageInfo) {
+        const packagePath = this.getPackagePath(packageInfo);
+        if (!fs.existsSync(packagePath)) {
+            return false;
+        }
+        return fs.readdirSync(packagePath).length > 0;
     }
     async run(args, printOutputInDebug) {
         let stdout = "";
@@ -47580,7 +47583,7 @@ const run = async () => {
                 core.info("Trying to restore package from cache...");
                 const cacheHitKey = await cache.restoreCache([localPackagePath], cacheKey);
                 cacheHit = Boolean(cacheHitKey);
-                if (cacheHit && utils_1.isEmptyDirectory(localPackagePath)) {
+                if (cacheHit && !sdkmanager.isPackageInstalled(foundPackage)) {
                     core.debug("  [WARNING] Cache is invalid and contains empty folder. ");
                     cacheHit = false;
                 }

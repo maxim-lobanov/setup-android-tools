@@ -1,5 +1,6 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
+import * as fs from "fs";
 import path from "path";
 import { parseSDKManagerOutput, AndroidPackageInfo } from "./sdk-manager-parser";
 import { splitByEOL } from "./utils";
@@ -29,6 +30,15 @@ export class SDKManager {
     public getPackagePath(packageInfo: AndroidPackageInfo): string {
         const relativePath = packageInfo.name.replace(";", "/");
         return path.join(this.androidHome, relativePath);
+    }
+
+    public isPackageInstalled(packageInfo: AndroidPackageInfo): boolean {
+        const packagePath = this.getPackagePath(packageInfo);
+        if (!fs.existsSync(packagePath)) {
+            return false;
+        }
+
+        return fs.readdirSync(packagePath).length > 0;
     }
 
     private async run(args: string[], printOutputInDebug: boolean): Promise<string> {

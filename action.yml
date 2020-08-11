@@ -5,6 +5,9 @@ inputs:
   packages:
     description: 'Packages to install'
     required: true
+  cache:
+    description: 'Enable caching'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'

@@ -47561,17 +47561,28 @@ const run = async () => {
             core.info(`Installing '${packageName}'...`);
             const foundPackage = allPackages.find(p => p.name === packageName);
             if (!foundPackage) {
-                throw new Error(`  Package '${packageName}' is not available. Enable debug output for more details.`);
+                throw new Error(`Package '${packageName}' is not available. Enable debug output for more details.`);
             }
             if (foundPackage.installed && !foundPackage.update) {
-                core.info(`Package '${foundPackage.name}' is already installed and update is not required`);
+                core.info(`  Package '${foundPackage.name}' is already installed and update is not required`);
                 continue;
             }
             const cacheKey = `${foundPackage.name} ${foundPackage.remoteVersion}`;
-            await sdkmanager.install(foundPackage);
             const localPackagePath = sdkmanager.getPackagePath(foundPackage);
+            let cacheHit = false;
+            if (enableCache) {
+                const cacheHitKey = await cache.restoreCache([localPackagePath], cacheKey);
+                cacheHit = Boolean(cacheHitKey);
+            }
+            if (cacheHit) {
+                core.info(`  Package ${foundPackage.name}' is restored from cache`);
+                continue;
+            }
+            await sdkmanager.install(foundPackage);
+            core.info(`  Package ${foundPackage.name}' is downloaded and installed`);
             if (enableCache) {
                 await cache.saveCache([localPackagePath], cacheKey);
+                core.info(`  Package ${foundPackage.name}' is saved to cache`);
             }
         }
     }

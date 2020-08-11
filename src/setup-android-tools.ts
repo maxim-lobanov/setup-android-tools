@@ -3,7 +3,7 @@ import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as os from "os";
 import { SDKManager } from "./sdk-manager";
-import { getListInput, getBooleanInput } from "./utils";
+import { getListInput, getBooleanInput, isEmptyDirectory } from "./utils";
 
 const patchUbuntuPermissions = async(androidHome: string): Promise<void> => {
     core.info("Patch permissions for $ANDROID_HOME on Ubuntu");
@@ -41,21 +41,30 @@ const run = async(): Promise<void> => {
 
             let cacheHit = false;
             if (enableCache) {
+                core.info("Trying to restore package from cache...");
                 const cacheHitKey = await cache.restoreCache([localPackagePath], cacheKey);
                 cacheHit = Boolean(cacheHitKey);
+                if (cacheHit && isEmptyDirectory(localPackagePath)) {
+                    core.debug("  [WARNING] Cache is invalid and contains empty folder. ");
+                    cacheHit = false;
+                }
             }
 
             if (cacheHit) {
-                core.info(`  Package ${foundPackage.name}' is restored from cache`);
+                core.info(`  Package '${foundPackage.name}' is restored from cache`);
                 continue;
+            } else {
+                core.info("No cache found");
             }
 
+            core.info("Trying to download package via sdkmanager...");
             await sdkmanager.install(foundPackage);
-            core.info(`  Package ${foundPackage.name}' is downloaded and installed`);
+            core.info(`  Package '${foundPackage.name}' is downloaded and installed`);
 
             if (enableCache) {
+                core.info("Saving package to cache...");
                 await cache.saveCache([localPackagePath], cacheKey);
-                core.info(`  Package ${foundPackage.name}' is saved to cache`);
+                core.info(`  Package '${foundPackage.name}' is saved to cache`);
             }
         }
     } catch (error) {

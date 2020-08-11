@@ -36236,8 +36236,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBooleanInput = exports.getListInput = exports.splitByEOL = void 0;
+exports.isEmptyDirectory = exports.getBooleanInput = exports.getListInput = exports.splitByEOL = void 0;
 const core = __importStar(__webpack_require__(470));
+const fs = __importStar(__webpack_require__(747));
 exports.splitByEOL = (stdout) => {
     return stdout.split(/[\r\n]/);
 };
@@ -36247,6 +36248,10 @@ exports.getListInput = (inputName) => {
 };
 exports.getBooleanInput = (inputName) => {
     return (core.getInput(inputName) || "false").toUpperCase() === "TRUE";
+};
+exports.isEmptyDirectory = (directoryPath) => {
+    const children = fs.readdirSync(directoryPath);
+    return children.length === 0;
 };
 
 
@@ -47572,18 +47577,28 @@ const run = async () => {
             const localPackagePath = sdkmanager.getPackagePath(foundPackage);
             let cacheHit = false;
             if (enableCache) {
+                core.info("Trying to restore package from cache...");
                 const cacheHitKey = await cache.restoreCache([localPackagePath], cacheKey);
                 cacheHit = Boolean(cacheHitKey);
+                if (cacheHit && utils_1.isEmptyDirectory(localPackagePath)) {
+                    core.debug("  [WARNING] Cache is invalid and contains empty folder. ");
+                    cacheHit = false;
+                }
             }
             if (cacheHit) {
-                core.info(`  Package ${foundPackage.name}' is restored from cache`);
+                core.info(`  Package '${foundPackage.name}' is restored from cache`);
                 continue;
             }
+            else {
+                core.info("No cache found");
+            }
+            core.info("Trying to download package via sdkmanager...");
             await sdkmanager.install(foundPackage);
-            core.info(`  Package ${foundPackage.name}' is downloaded and installed`);
+            core.info(`  Package '${foundPackage.name}' is downloaded and installed`);
             if (enableCache) {
+                core.info("Saving package to cache...");
                 await cache.saveCache([localPackagePath], cacheKey);
-                core.info(`  Package ${foundPackage.name}' is saved to cache`);
+                core.info(`  Package '${foundPackage.name}' is saved to cache`);
             }
         }
     }

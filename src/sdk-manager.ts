@@ -28,7 +28,7 @@ export class SDKManager {
     }
 
     public getPackagePath(packageInfo: AndroidPackageInfo): string {
-        const relativePath = packageInfo.name.replace(";", "/");
+        const relativePath = packageInfo.name.replace(/;/g, "/");
         return path.join(this.androidHome, relativePath);
     }
 

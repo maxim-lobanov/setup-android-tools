@@ -42067,7 +42067,7 @@ class SDKManager {
         return parsedPackages;
     }
     getPackagePath(packageInfo) {
-        const relativePath = packageInfo.name.replace(";", "/");
+        const relativePath = packageInfo.name.replace(/;/g, "/");
         return path_1.default.join(this.androidHome, relativePath);
     }
     isPackageInstalled(packageInfo) {

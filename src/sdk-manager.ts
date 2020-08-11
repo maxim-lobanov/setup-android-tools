@@ -55,6 +55,7 @@ export class SDKManager {
                 stdout: outputListener,
                 stderr: outputListener,
             },
+            input: Buffer.from("y") // accept license
         };
         const commandString = `${this.sdkManagerPath} ${args.join(" ")}`;
         console.log(`[command]${commandString}`);

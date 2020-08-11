@@ -8,7 +8,7 @@ export class SDKManager {
     private sdkManagerPath: string;
 
     constructor(androidHome: string) {
-        this.sdkManagerPath = `"${path.join(androidHome, "tools", "bin", "sdkmanager")}"`;
+        this.sdkManagerPath = path.join(androidHome, "tools", "bin", "sdkmanager");
     }
 
     public async install(packageInfo: AndroidPackageInfo): Promise<void> {
@@ -56,9 +56,9 @@ export class SDKManager {
                 stderr: outputListener,
             },
         };
-        const commandString = `${this.sdkManagerPath.replace(/"/g, "")} ${args.join(" ")}`;
+        const commandString = `${this.sdkManagerPath} ${args.join(" ")}`;
         console.log(`[command]${commandString}`);
-        const exitCode = await exec.exec(this.sdkManagerPath, args, options);
+        const exitCode = await exec.exec(`"${this.sdkManagerPath}"`, args, options);
         if (exitCode !== 0) {
             throw new Error(`'${commandString}' has finished with exit code '${exitCode}'`);
         }

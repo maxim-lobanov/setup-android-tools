@@ -11,6 +11,7 @@ jobs:
     strategy:
       matrix:
         operating-system: [ubuntu-latest, windows-latest, macos-latest]
+        cache: [true, false]
       fail-fast: false
     runs-on: ${{ matrix.operating-system }}
     steps:
@@ -21,6 +22,7 @@ jobs:
       uses: ./
       with:
         packages: ndk;19.2.5345600
+        cache: ${{ matrix.cache }}
     
     - name: setup-anroid-tools-2
       uses: ./
@@ -28,8 +30,10 @@ jobs:
         packages: |
           sources;android-28
           sources;android-29
+        cache: ${{ matrix.cache }}
 
     - name: already-installed
       uses: ./
       with:
         packages: platforms;android-30
+        cache: ${{ matrix.cache }}

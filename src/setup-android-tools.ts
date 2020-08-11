@@ -1,14 +1,9 @@
+import * as cache from "@actions/cache";
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as os from "os";
-import * as fs from "fs";
 import { SDKManager } from "./sdk-manager";
-import { splitByEOL } from "./utils";
-
-const getListInput = (inputName: string): string[] => {
-    const value = core.getInput(inputName);
-    return splitByEOL(value).map(s => s.trim()).filter(Boolean);
-};
+import { getListInput, getBooleanInput } from "./utils";
 
 const patchUbuntuPermissions = async(androidHome: string): Promise<void> => {
     core.info("Patch permissions for $ANDROID_HOME on Ubuntu");
@@ -27,6 +22,7 @@ const run = async(): Promise<void> => {
         const sdkmanager = new SDKManager(androidHome);
         const allPackages = await sdkmanager.getAllPackagesInfo();
 
+        const enableCache = getBooleanInput("cache");
         const packages = getListInput("packages");
         for (const packageName of packages) {
             core.info(`Installing '${packageName}'...`);
@@ -40,12 +36,15 @@ const run = async(): Promise<void> => {
                 continue;
             }
 
+            const cacheKey = `${foundPackage.name} ${foundPackage.remoteVersion}`;
+
             await sdkmanager.install(foundPackage);
 
             const localPackagePath = sdkmanager.getPackagePath(foundPackage);
-            console.log(localPackagePath);
-            console.log(fs.existsSync(localPackagePath));
-            console.log(fs.readdirSync(localPackagePath).join(", "));
+
+            if (enableCache) {
+                await cache.saveCache([localPackagePath], cacheKey);
+            }
         }
     } catch (error) {
         core.setFailed(error.message);

@@ -1678,6 +1678,7 @@ const sdk_manager_parser_1 = __webpack_require__(551);
 const utils_1 = __webpack_require__(611);
 class SDKManager {
     constructor(androidHome) {
+        this.androidHome = androidHome;
         this.sdkManagerPath = path_1.default.join(androidHome, "tools", "bin", "sdkmanager");
     }
     async install(packageInfo) {
@@ -1694,7 +1695,7 @@ class SDKManager {
     }
     getPackagePath(packageInfo) {
         const relativePath = packageInfo.name.replace(";", "/");
-        return path_1.default.join(this.sdkManagerPath, relativePath);
+        return path_1.default.join(this.androidHome, relativePath);
     }
     async run(args, printOutputInDebug) {
         let stdout = "";

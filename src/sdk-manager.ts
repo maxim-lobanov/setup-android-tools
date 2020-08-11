@@ -7,7 +7,7 @@ import { splitByEOL } from "./utils";
 export class SDKManager {
     private sdkManagerPath: string;
 
-    constructor(androidHome: string) {
+    constructor(private androidHome: string) {
         this.sdkManagerPath = path.join(androidHome, "tools", "bin", "sdkmanager");
     }
 
@@ -28,7 +28,7 @@ export class SDKManager {
 
     public getPackagePath(packageInfo: AndroidPackageInfo): string {
         const relativePath = packageInfo.name.replace(";", "/");
-        return path.join(this.sdkManagerPath, relativePath);
+        return path.join(this.androidHome, relativePath);
     }
 
     private async run(args: string[], printOutputInDebug: boolean): Promise<string> {

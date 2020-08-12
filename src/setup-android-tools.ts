@@ -82,7 +82,7 @@ const run = async(): Promise<void> => {
 
             if (enableCache) {
                 await saveCache(sdkmanager, foundPackage);
-                core.info(`  Package is saved to cache`);
+                core.info("  Package is saved to cache");
             }
         }
     } catch (error) {

@@ -47621,7 +47621,7 @@ const run = async () => {
             core.info("  Package is downloaded and installed");
             if (enableCache) {
                 await saveCache(sdkmanager, foundPackage);
-                core.info(`  Package is saved to cache`);
+                core.info("  Package is saved to cache");
             }
         }
     }

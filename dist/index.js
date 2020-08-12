@@ -47580,7 +47580,7 @@ const run = async () => {
             const localPackagePath = sdkmanager.getPackagePath(foundPackage);
             let cacheHit = false;
             if (enableCache) {
-                core.startGroup("  Trying to restore package from cache...");
+                core.startGroup("Trying to restore package from cache...");
                 const cacheHitKey = await cache.restoreCache([localPackagePath], cacheKey);
                 cacheHit = Boolean(cacheHitKey);
                 if (cacheHit && !sdkmanager.isPackageInstalled(foundPackage)) {
@@ -47596,7 +47596,7 @@ const run = async () => {
             else {
                 core.info("  No cache found");
             }
-            core.startGroup("  Trying to download package via sdkmanager...");
+            core.startGroup("Trying to download package via sdkmanager...");
             await sdkmanager.install(foundPackage);
             core.endGroup();
             core.info(`  Package '${foundPackage.name}' is downloaded and installed`);
@@ -47604,7 +47604,7 @@ const run = async () => {
                 throw new Error(`Package '${packageName}' was not installed properly. '${localPackagePath}' folder is empty and doesn't exist`);
             }
             if (enableCache) {
-                core.startGroup("  Saving package to cache...");
+                core.startGroup("Saving package to cache...");
                 await cache.saveCache([localPackagePath], cacheKey);
                 core.endGroup();
                 core.info(`  Package '${foundPackage.name}' is saved to cache`);

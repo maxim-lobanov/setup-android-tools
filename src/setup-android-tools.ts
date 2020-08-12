@@ -57,7 +57,7 @@ const run = async(): Promise<void> => {
         core.endGroup();
 
         for (const packageName of packages) {
-            core.info(`Installing '${packageName}'...`);
+            core.startGroup(`Installing '${packageName}'...`);
             const foundPackage = allPackages.find(p => p.name === packageName);
             if (!foundPackage) {
                 throw new Error(`Package '${packageName}' is not available. Enable debug output for more details`);
@@ -65,6 +65,7 @@ const run = async(): Promise<void> => {
 
             if (foundPackage.installed && !foundPackage.update) {
                 core.info(`  Package '${foundPackage.name}' is already installed and update is not required`);
+                core.endGroup();
                 continue;
             }
 
@@ -72,6 +73,7 @@ const run = async(): Promise<void> => {
                 if (await restoreCache(sdkmanager, foundPackage)) {
                     core.info(`  Package '${foundPackage.name}' is restored from cache`);
                     continue;
+                    core.endGroup();
                 } else {
                     core.info("  No cache found");
                 }
@@ -84,7 +86,7 @@ const run = async(): Promise<void> => {
                 await saveCache(sdkmanager, foundPackage);
                 core.info(`  Package '${foundPackage.name}' is saved to cache`);
             }
-            core.info("");
+            core.endGroup();
         }
     } catch (error) {
         core.setFailed(error.message);

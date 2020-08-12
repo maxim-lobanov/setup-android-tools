@@ -47599,19 +47599,21 @@ const run = async () => {
         const allPackages = await sdkmanager.getAllPackagesInfo();
         core.endGroup();
         for (const packageName of packages) {
-            core.info(`Installing '${packageName}'...`);
+            core.startGroup(`Installing '${packageName}'...`);
             const foundPackage = allPackages.find(p => p.name === packageName);
             if (!foundPackage) {
                 throw new Error(`Package '${packageName}' is not available. Enable debug output for more details`);
             }
             if (foundPackage.installed && !foundPackage.update) {
                 core.info(`  Package '${foundPackage.name}' is already installed and update is not required`);
+                core.endGroup();
                 continue;
             }
             if (enableCache) {
                 if (await restoreCache(sdkmanager, foundPackage)) {
                     core.info(`  Package '${foundPackage.name}' is restored from cache`);
                     continue;
+                    core.endGroup();
                 }
                 else {
                     core.info("  No cache found");
@@ -47623,7 +47625,7 @@ const run = async () => {
                 await saveCache(sdkmanager, foundPackage);
                 core.info(`  Package '${foundPackage.name}' is saved to cache`);
             }
-            core.info("");
+            core.endGroup();
         }
     }
     catch (error) {

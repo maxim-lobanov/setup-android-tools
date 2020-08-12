@@ -13,7 +13,14 @@ export class SDKManager {
     }
 
     public async install(packageInfo: AndroidPackageInfo): Promise<void> {
+        core.startGroup("Trying to download package via sdkmanager...");
         await this.run([packageInfo.name], true);
+        core.endGroup();
+
+        if (!this.isPackageInstalled(packageInfo)) {
+            const localPackagePath = this.getPackagePath(packageInfo);
+            throw new Error(`Package '${packageInfo.name}' was not installed properly. '${localPackagePath}' folder is empty and doesn't exist`);
+        }
     }
 
     public async getAllPackagesInfo(): Promise<AndroidPackageInfo[]> {

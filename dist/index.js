@@ -36236,7 +36236,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getBooleanInput = exports.getListInput = exports.splitByEOL = void 0;
+exports.getPackageCacheKey = exports.getBooleanInput = exports.getListInput = exports.splitByEOL = void 0;
 const core = __importStar(__webpack_require__(470));
 exports.splitByEOL = (stdout) => {
     return stdout.split(/[\r\n]/);
@@ -36247,6 +36247,9 @@ exports.getListInput = (inputName) => {
 };
 exports.getBooleanInput = (inputName) => {
     return (core.getInput(inputName) || "false").toUpperCase() === "TRUE";
+};
+exports.getPackageCacheKey = (packageInfo) => {
+    return `${packageInfo.name} ${packageInfo.remoteVersion}/1`;
 };
 
 
@@ -42055,7 +42058,13 @@ class SDKManager {
         this.sdkManagerPath = path_1.default.join(androidHome, "tools", "bin", "sdkmanager");
     }
     async install(packageInfo) {
+        core.startGroup("Trying to download package via sdkmanager...");
         await this.run([packageInfo.name], true);
+        core.endGroup();
+        if (!this.isPackageInstalled(packageInfo)) {
+            const localPackagePath = this.getPackagePath(packageInfo);
+            throw new Error(`Package '${packageInfo.name}' was not installed properly. '${localPackagePath}' folder is empty and doesn't exist`);
+        }
     }
     async getAllPackagesInfo() {
         const stdout = await this.run(["--list"], false);
@@ -47550,65 +47559,71 @@ const os = __importStar(__webpack_require__(87));
 const sdk_manager_1 = __webpack_require__(857);
 const utils_1 = __webpack_require__(611);
 const patchUbuntuPermissions = async (androidHome) => {
-    core.info("Patch permissions for $ANDROID_HOME on Ubuntu");
+    core.startGroup("Patch permissions for $ANDROID_HOME on Ubuntu");
     await exec.exec("sudo", ["chmod", "-R", "a+rwx", androidHome]);
+    core.endGroup();
+};
+const restoreCache = async (sdkmanager, foundPackage) => {
+    core.startGroup("Trying to restore package from cache...");
+    const cacheKey = utils_1.getPackageCacheKey(foundPackage);
+    const localPackagePath = sdkmanager.getPackagePath(foundPackage);
+    const cacheHitKey = await cache.restoreCache([localPackagePath], cacheKey);
+    let cacheHit = Boolean(cacheHitKey);
+    if (cacheHit && !sdkmanager.isPackageInstalled(foundPackage)) {
+        core.debug("  [WARNING] Cache is invalid and contains empty folder. ");
+        cacheHit = false;
+    }
+    core.endGroup();
+    return cacheHit;
+};
+const saveCache = async (sdkmanager, packageInfo) => {
+    core.startGroup("Saving package to cache...");
+    const cacheKey = utils_1.getPackageCacheKey(packageInfo);
+    const localPackagePath = sdkmanager.getPackagePath(packageInfo);
+    await cache.saveCache([localPackagePath], cacheKey);
+    core.endGroup();
 };
 const run = async () => {
     try {
+        const enableCache = utils_1.getBooleanInput("cache");
+        const packages = utils_1.getListInput("packages");
         const androidHome = process.env.ANDROID_HOME;
         if (!androidHome) {
             throw new Error("ANDROID_HOME env variable is not defined");
         }
+        const sdkmanager = new sdk_manager_1.SDKManager(androidHome);
         if (os.platform() === "linux") {
             await patchUbuntuPermissions(androidHome);
         }
-        const sdkmanager = new sdk_manager_1.SDKManager(androidHome);
+        core.startGroup("Getting list of available components");
         const allPackages = await sdkmanager.getAllPackagesInfo();
-        const enableCache = utils_1.getBooleanInput("cache");
-        const packages = utils_1.getListInput("packages");
+        core.endGroup();
         for (const packageName of packages) {
             core.info(`Installing '${packageName}'...`);
             const foundPackage = allPackages.find(p => p.name === packageName);
             if (!foundPackage) {
-                throw new Error(`Package '${packageName}' is not available. Enable debug output for more details.`);
+                throw new Error(`Package '${packageName}' is not available. Enable debug output for more details`);
             }
             if (foundPackage.installed && !foundPackage.update) {
                 core.info(`  Package '${foundPackage.name}' is already installed and update is not required`);
                 continue;
             }
-            const cacheKey = `${foundPackage.name} ${foundPackage.remoteVersion}/1`;
-            const localPackagePath = sdkmanager.getPackagePath(foundPackage);
-            let cacheHit = false;
             if (enableCache) {
-                core.startGroup("Trying to restore package from cache...");
-                const cacheHitKey = await cache.restoreCache([localPackagePath], cacheKey);
-                cacheHit = Boolean(cacheHitKey);
-                if (cacheHit && !sdkmanager.isPackageInstalled(foundPackage)) {
-                    core.debug("  [WARNING] Cache is invalid and contains empty folder. ");
-                    cacheHit = false;
+                if (await restoreCache(sdkmanager, foundPackage)) {
+                    core.info(`  Package '${foundPackage.name}' is restored from cache`);
+                    continue;
                 }
-                core.endGroup();
+                else {
+                    core.info("  No cache found");
+                }
             }
-            if (cacheHit) {
-                core.info(`  Package '${foundPackage.name}' is restored from cache`);
-                continue;
-            }
-            else {
-                core.info("  No cache found");
-            }
-            core.startGroup("Trying to download package via sdkmanager...");
             await sdkmanager.install(foundPackage);
-            core.endGroup();
             core.info(`  Package '${foundPackage.name}' is downloaded and installed`);
-            if (!sdkmanager.isPackageInstalled(foundPackage)) {
-                throw new Error(`Package '${packageName}' was not installed properly. '${localPackagePath}' folder is empty and doesn't exist`);
-            }
             if (enableCache) {
-                core.startGroup("Saving package to cache...");
-                await cache.saveCache([localPackagePath], cacheKey);
-                core.endGroup();
+                await saveCache(sdkmanager, foundPackage);
                 core.info(`  Package '${foundPackage.name}' is saved to cache`);
             }
+            core.info("");
         }
     }
     catch (error) {

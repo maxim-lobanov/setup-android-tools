@@ -8,7 +8,7 @@ on:
 
 jobs:
   task:
-    name: task
+    name: install
     strategy:
       matrix:
         operating-system: [ubuntu-latest, windows-latest, macos-latest]
@@ -45,7 +45,7 @@ jobs:
         cache: ${{ matrix.cache }}
 
   already-installed:
-    name: 'Check that installed tools are not re-installed'
+    name: pre-installed
     strategy:
       matrix:
         operating-system: [ubuntu-latest, windows-latest, macos-latest]
@@ -54,10 +54,12 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    - name: setup platforms;android-30
+    - name: setup platforms
       uses: ./
       with:
-        packages: platforms;android-30
+        packages: |
+          platforms;android-29
+          platforms;android-30
     - name: setup ndk-bundle
       uses: ./
       with:

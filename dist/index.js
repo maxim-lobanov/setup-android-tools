@@ -47599,33 +47599,30 @@ const run = async () => {
         const allPackages = await sdkmanager.getAllPackagesInfo();
         core.endGroup();
         for (const packageName of packages) {
-            core.startGroup(`Installing '${packageName}'...`);
+            core.info(`${os.EOL}Installing '${packageName}'...`);
             const foundPackage = allPackages.find(p => p.name === packageName);
             if (!foundPackage) {
-                throw new Error(`Package '${packageName}' is not available. Enable debug output for more details`);
+                throw new Error("Package is not available. Enable debug output for more details");
             }
             if (foundPackage.installed && !foundPackage.update) {
-                core.info(`  Package '${foundPackage.name}' is already installed and update is not required`);
-                core.endGroup();
+                core.info("  Package is already installed and update is not required");
                 continue;
             }
             if (enableCache) {
                 if (await restoreCache(sdkmanager, foundPackage)) {
-                    core.info(`  Package '${foundPackage.name}' is restored from cache`);
+                    core.info("  Package is restored from cache");
                     continue;
-                    core.endGroup();
                 }
                 else {
                     core.info("  No cache found");
                 }
             }
             await sdkmanager.install(foundPackage);
-            core.info(`  Package '${foundPackage.name}' is downloaded and installed`);
+            core.info("  Package is downloaded and installed");
             if (enableCache) {
                 await saveCache(sdkmanager, foundPackage);
-                core.info(`  Package '${foundPackage.name}' is saved to cache`);
+                core.info(`  Package is saved to cache`);
             }
-            core.endGroup();
         }
     }
     catch (error) {

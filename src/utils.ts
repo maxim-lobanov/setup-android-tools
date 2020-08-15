@@ -16,4 +16,4 @@ export const getBooleanInput = (inputName: string): boolean => {
 
 export const getPackageCacheKey = (packageInfo: AndroidPackageInfo): string => {
     return `${packageInfo.name} ${packageInfo.remoteVersion}/1`;
-}
+};

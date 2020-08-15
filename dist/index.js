@@ -47608,6 +47608,9 @@ const run = async () => {
                 core.info("  Package is already installed and update is not required");
                 continue;
             }
+            if (foundPackage.update) {
+                core.info("  Package is already installed but update is required");
+            }
             if (enableCache) {
                 if (await restoreCache(sdkmanager, foundPackage)) {
                     core.info("  Package is restored from cache");

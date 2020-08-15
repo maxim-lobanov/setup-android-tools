@@ -1,6 +1,6 @@
 name: 'Setup Android tools'
 author: 'Maxim Lobanov'
-description: 'Set up Android tools in GitHub Actions workflow with cache'
+description: 'Set up Android tools in GitHub Actions workflow with caching'
 inputs:
   packages:
     description: 'Packages to install'

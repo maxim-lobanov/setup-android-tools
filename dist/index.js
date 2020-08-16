@@ -36238,6 +36238,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getPackageCacheKey = exports.getBooleanInput = exports.getListInput = exports.splitByEOL = void 0;
 const core = __importStar(__webpack_require__(470));
+const os = __importStar(__webpack_require__(87));
 exports.splitByEOL = (stdout) => {
     return stdout.split(/[\r\n]/);
 };
@@ -36249,7 +36250,9 @@ exports.getBooleanInput = (inputName) => {
     return (core.getInput(inputName) || "false").toUpperCase() === "TRUE";
 };
 exports.getPackageCacheKey = (packageInfo) => {
-    return `${packageInfo.name} ${packageInfo.remoteVersion}/2`;
+    var _a;
+    const platformLabel = (_a = process.env.ImageOS) !== null && _a !== void 0 ? _a : os.platform();
+    return `${packageInfo.name}/${packageInfo.remoteVersion}/${platformLabel}`;
 };
 
 

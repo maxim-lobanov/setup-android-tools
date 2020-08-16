@@ -1,4 +1,5 @@
 import * as core from "@actions/core";
+import * as os from "os";
 import { AndroidPackageInfo } from "./sdk-manager-parser";
 
 export const splitByEOL = (stdout: string): string[] => {
@@ -15,5 +16,6 @@ export const getBooleanInput = (inputName: string): boolean => {
 };
 
 export const getPackageCacheKey = (packageInfo: AndroidPackageInfo): string => {
-    return `${packageInfo.name} ${packageInfo.remoteVersion}/2`;
+    const platformLabel = process.env.ImageOS ?? os.platform();
+    return `${packageInfo.name}/${packageInfo.remoteVersion}/${platformLabel}`;
 };

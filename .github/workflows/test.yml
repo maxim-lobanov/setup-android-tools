@@ -1,6 +1,5 @@
 name: Validate 'setup-android-tools'
 on:
-  push:
   pull_request:
   workflow_dispatch: 
   schedule:

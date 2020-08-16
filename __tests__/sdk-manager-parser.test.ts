@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as path from "path";
 import { getNewState, parseSDKManagerOutput, AndroidPackageInfo } from "../src/sdk-manager-parser";
 import { splitByEOL } from "../src/utils";
 
@@ -29,7 +30,8 @@ describe("splitByEOL", () => {
 
 describe("parseSDKManagerOutput", () => {
     const getInputFromFile = (filename: string): string => {
-        return fs.readFileSync(`${__dirname}/fixture/${filename}`).toString();
+        const testInputPath = path.join(__dirname, "fixture", filename);
+        return fs.readFileSync(testInputPath).toString();
     };
 
     it("simple case", () => {
@@ -66,7 +68,7 @@ describe("parseSDKManagerOutput", () => {
     });
 
     it("real windows case", () => {
-        const input = fs.readFileSync(`${__dirname}/fixture/complex-output.txt`).toString();
+        const input = getInputFromFile("complex-output.txt");
         const expected = [
             { name: "add-ons;addon-google_apis-google-22", localVersion: "", remoteVersion: "1", description: "Google APIs", installed: false, update: false },
             { name: "add-ons;addon-google_apis-google-23", localVersion: "1", remoteVersion: "1", description: "Google APIs", installed: true, update: false },

@@ -21,7 +21,7 @@ const restoreCache = async(sdkmanager: SDKManager, foundPackage: AndroidPackageI
 
     let cacheHit = Boolean(cacheHitKey);
     if (cacheHit && !sdkmanager.isPackageInstalled(foundPackage)) {
-        core.debug("  [WARNING] Cache is invalid and contains empty folder. ");
+        core.info("  [WARNING] Cache is invalid and contains empty folder. ");
         cacheHit = false;
     }
     core.endGroup();

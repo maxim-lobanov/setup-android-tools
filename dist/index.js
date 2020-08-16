@@ -36249,7 +36249,7 @@ exports.getBooleanInput = (inputName) => {
     return (core.getInput(inputName) || "false").toUpperCase() === "TRUE";
 };
 exports.getPackageCacheKey = (packageInfo) => {
-    return `${packageInfo.name} ${packageInfo.remoteVersion}/1`;
+    return `${packageInfo.name} ${packageInfo.remoteVersion}/2`;
 };
 
 

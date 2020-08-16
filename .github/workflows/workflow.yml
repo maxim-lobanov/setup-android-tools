@@ -6,7 +6,7 @@ jobs:
     name: Build task
     strategy:
       matrix:
-        operating-system: [ubuntu-latest, windows-latest, macos-latest]
+        operating-system: [ubuntu-latest, macos-latest]
       fail-fast: false
     runs-on: ${{ matrix.operating-system }}
     steps:

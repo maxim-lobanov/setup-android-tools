@@ -1,16 +1,9 @@
 import * as cache from "@actions/cache";
 import * as core from "@actions/core";
-import * as exec from "@actions/exec";
 import * as os from "os";
 import { SDKManager } from "./sdk-manager";
 import { getListInput, getBooleanInput, getPackageCacheKey } from "./utils";
 import { AndroidPackageInfo } from "./sdk-manager-parser";
-
-const patchUbuntuPermissions = async(androidHome: string): Promise<void> => {
-    core.startGroup("Patch permissions for $ANDROID_HOME on Ubuntu");
-    await exec.exec("sudo", ["chmod", "-R", "a+rwx", androidHome]);
-    core.endGroup();
-};
 
 const restoreCache = async(sdkmanager: SDKManager, foundPackage: AndroidPackageInfo): Promise<boolean> => {
     core.startGroup("Trying to restore package from cache...");
@@ -47,10 +40,6 @@ const run = async(): Promise<void> => {
         const androidHome = process.env.ANDROID_HOME;
         if (!androidHome) { throw new Error("ANDROID_HOME env variable is not defined"); }
         const sdkmanager = new SDKManager(androidHome);
-
-        if (os.platform() === "linux") {
-            await patchUbuntuPermissions(androidHome);
-        }
 
         core.startGroup("Getting list of available components");
         const allPackages = await sdkmanager.getAllPackagesInfo();

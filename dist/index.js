@@ -42052,6 +42052,7 @@ exports.SDKManager = void 0;
 const core = __importStar(__webpack_require__(470));
 const exec = __importStar(__webpack_require__(986));
 const fs = __importStar(__webpack_require__(747));
+const os = __importStar(__webpack_require__(87));
 const path_1 = __importDefault(__webpack_require__(622));
 const sdk_manager_parser_1 = __webpack_require__(551);
 const utils_1 = __webpack_require__(611);
@@ -42116,7 +42117,13 @@ class SDKManager {
         };
         const commandString = `${this.sdkManagerPath} ${args.join(" ")}`;
         console.log(`[command]${commandString}`);
-        const exitCode = await exec.exec("sudo", [`"${this.sdkManagerPath}"`, ...args], options);
+        let exitCode;
+        if (os.platform() === "linux") {
+            exitCode = await exec.exec("sudo", [this.sdkManagerPath, ...args], options);
+        }
+        else {
+            exitCode = await exec.exec(`"${this.sdkManagerPath}"`, args, options);
+        }
         if (exitCode !== 0) {
             throw new Error(`'${commandString}' has finished with exit code '${exitCode}'`);
         }

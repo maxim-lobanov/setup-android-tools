@@ -1,6 +1,7 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as fs from "fs";
+import * as os from "os";
 import path from "path";
 import { parseSDKManagerOutput, AndroidPackageInfo } from "./sdk-manager-parser";
 import { splitByEOL } from "./utils";
@@ -76,7 +77,14 @@ export class SDKManager {
         };
         const commandString = `${this.sdkManagerPath} ${args.join(" ")}`;
         console.log(`[command]${commandString}`);
-        const exitCode = await exec.exec("sudo", [`"${this.sdkManagerPath}"`, ...args], options);
+
+        let exitCode;
+        if (os.platform() === "linux") {
+            exitCode = await exec.exec("sudo", [this.sdkManagerPath, ...args], options);
+        } else {
+            exitCode = await exec.exec(`"${this.sdkManagerPath}"`, args, options);
+        }
+        
         if (exitCode !== 0) {
             throw new Error(`'${commandString}' has finished with exit code '${exitCode}'`);
         }

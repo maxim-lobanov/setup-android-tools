@@ -47557,9 +47557,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const cache = __importStar(__webpack_require__(692));
 const core = __importStar(__webpack_require__(470));
+const exec = __importStar(__webpack_require__(986));
 const os = __importStar(__webpack_require__(87));
 const sdk_manager_1 = __webpack_require__(857);
 const utils_1 = __webpack_require__(611);
+const patchUbuntuPermissions = async (androidHome) => {
+    core.startGroup("Patch permissions for $ANDROID_HOME on Ubuntu");
+    await exec.exec("sudo", ["chmod", "-R", "a+rwx", androidHome]);
+    core.endGroup();
+};
 const restoreCache = async (sdkmanager, foundPackage) => {
     core.startGroup("Trying to restore package from cache...");
     const cacheKey = utils_1.getPackageCacheKey(foundPackage);
@@ -47589,6 +47595,9 @@ const run = async () => {
             throw new Error("ANDROID_HOME env variable is not defined");
         }
         const sdkmanager = new sdk_manager_1.SDKManager(androidHome);
+        if (os.platform() === "linux") {
+            await patchUbuntuPermissions(androidHome);
+        }
         core.startGroup("Getting list of available components");
         const allPackages = await sdkmanager.getAllPackagesInfo();
         core.endGroup();

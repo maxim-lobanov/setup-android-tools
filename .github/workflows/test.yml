@@ -37,7 +37,6 @@ jobs:
       uses: ./
       with:
         packages: |
-          platforms;android-20
           add-ons;addon-google_apis-google-19
           extras;m2repository;com;android;support;constraint;constraint-layout-solver;1.0.0-alpha8
           extras;google;webdriver

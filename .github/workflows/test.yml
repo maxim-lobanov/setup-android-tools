@@ -1,0 +1,64 @@
+name: Validate 'setup-android-tools'
+on:
+  pull_request:
+  workflow_dispatch: 
+  schedule:
+    - cron: 0 0 * * *
+
+jobs:
+  task:
+    name: install
+    strategy:
+      matrix:
+        operating-system: [ubuntu-latest, windows-latest, macos-latest]
+        cache: [true, false]
+      fail-fast: false
+    runs-on: ${{ matrix.operating-system }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: setup ndk
+      uses: ./
+      with:
+        packages: ndk;19.2.5345600
+        cache: ${{ matrix.cache }}
+    
+    - name: setup system-images
+      uses: ./
+      with:
+        packages: |
+          ndk-bundle
+          system-images;android-30;google_apis;x86
+          system-images;android-30;google_apis;x86_64
+        cache: ${{ matrix.cache }}
+
+    - name: setup components
+      uses: ./
+      with:
+        packages: |
+          add-ons;addon-google_apis-google-19
+          extras;m2repository;com;android;support;constraint;constraint-layout-solver;1.0.0-alpha8
+          extras;google;webdriver
+        cache: ${{ matrix.cache }}
+
+  already-installed:
+    name: pre-installed
+    strategy:
+      matrix:
+        operating-system: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.operating-system }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: setup platforms
+      uses: ./
+      with:
+        packages: |
+          platforms;android-29
+          platforms;android-30
+    - name: setup ndk-bundle
+      uses: ./
+      with:
+        packages: ndk-bundle

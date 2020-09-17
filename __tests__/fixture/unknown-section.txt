@@ -1,0 +1,21 @@
+Loading package information...
+[=========     ] 25% Loading local repository...
+[==============] 100% Computing updates...
+Installed packages:
+  Path   | Version   | Description   | Location  
+  -------   | -------   | -------   | -------
+  build-tools;28.0.2   | 28.0.2   | Android SDK Build-Tools 28.0.2   | build-tools\\28.0.2\\
+Available Packages:
+  Path  | Version   | Description   
+  -------   | -------   | -------  
+  ndk-bundle   | 21.3.6528147 | NDK
+
+Secret unknown section:
+  Path  | Version   | Description   
+  -------   | -------   | -------  
+  ndk-preview   | 21.3.6528147 | NDK
+
+Available Updates:
+  ID                   | Installed | Available
+  -------              | -------   | -------  
+  ndk-bundle   | 21.3.6528147 | 21.4.6528147

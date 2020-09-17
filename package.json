@@ -1,0 +1,43 @@
+{
+  "name": "setup-android-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Set up Android tools in GitHub Actions workflow with cache",
+  "main": "lib/setup-android-tools.js",
+  "scripts": {
+    "build": "tsc && ncc build",
+    "test": "jest",
+    "lint": "npx eslint **/*.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maxim-lobanov/setup-android-tools.git"
+  },
+  "keywords": [
+    "actions",
+    "android",
+    "sdk",
+    "tools",
+    "setup"
+  ],
+  "author": "Maxim Lobanov",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/cache": "^1.0.2",
+    "@actions/core": "^1.2.5",
+    "@actions/exec": "^1.0.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.14",
+    "@types/node": "^12.0.4",
+    "@typescript-eslint/eslint-plugin": "^4.1.1",
+    "@typescript-eslint/parser": "^4.1.1",
+    "@zeit/ncc": "^0.22.3",
+    "eslint": "7.9.0",
+    "eslint-plugin-jest": "^24.0.1",
+    "jest": "^26.4.2",
+    "jest-circus": "^26.4.2",
+    "ts-jest": "26.3.0",
+    "typescript": "^4.0.2"
+  }
+}

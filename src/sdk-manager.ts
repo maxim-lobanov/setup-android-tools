@@ -78,13 +78,7 @@ export class SDKManager {
         const commandString = `${this.sdkManagerPath} ${args.join(" ")}`;
         console.log(`[command]${commandString}`);
 
-        let exitCode;
-        if (os.platform() === "linux") {
-            exitCode = await exec.exec("sudo", [this.sdkManagerPath, ...args], options);
-        } else {
-            exitCode = await exec.exec(`"${this.sdkManagerPath}"`, args, options);
-        }
-        
+        const exitCode = await exec.exec(`"${this.sdkManagerPath}"`, args, options);
         if (exitCode !== 0) {
             throw new Error(`'${commandString}' has finished with exit code '${exitCode}'`);
         }

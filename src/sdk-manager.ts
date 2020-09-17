@@ -1,7 +1,6 @@
 import * as core from "@actions/core";
 import * as exec from "@actions/exec";
 import * as fs from "fs";
-import * as os from "os";
 import path from "path";
 import { parseSDKManagerOutput, AndroidPackageInfo } from "./sdk-manager-parser";
 import { splitByEOL } from "./utils";

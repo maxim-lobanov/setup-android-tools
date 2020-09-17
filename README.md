@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: setup-android-tools
-      uses: maxim-lobanov/setup-android-tools@1.0
+      uses: maxim-lobanov/setup-android-tools@v1.0
       with:
         packages: ndk;19.2.5345600
 ```
@@ -21,7 +21,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: maxim-lobanov/setup-android-tools@1.0
+    - uses: maxim-lobanov/setup-android-tools@v1.0
       with:
         packages: |
           platforms;android-29
@@ -35,7 +35,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: maxim-lobanov/setup-android-tools@1.0
+    - uses: maxim-lobanov/setup-android-tools@v1.0
       with:
         packages: ndk;19.2.5345600
         cache: true

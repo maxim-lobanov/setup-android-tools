@@ -1,7 +1,9 @@
 name: Validate 'setup-android-tools'
 on:
+  push:
+    branches:
+      - master
   pull_request:
-  workflow_dispatch: 
   schedule:
     - cron: 0 0 * * *
 

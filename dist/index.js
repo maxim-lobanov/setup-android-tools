@@ -1526,7 +1526,31 @@ if (typeof Symbol === undefined || !Symbol.asyncIterator) {
 /* 79 */,
 /* 80 */,
 /* 81 */,
-/* 82 */,
+/* 82 */
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * Sanitizes an input into a string so it can be passed into issueCommand safely
+ * @param input input to sanitize into a string
+ */
+function toCommandValue(input) {
+    if (input === null || input === undefined) {
+        return '';
+    }
+    else if (typeof input === 'string' || input instanceof String) {
+        return input;
+    }
+    return JSON.stringify(input);
+}
+exports.toCommandValue = toCommandValue;
+//# sourceMappingURL=utils.js.map
+
+/***/ }),
 /* 83 */,
 /* 84 */,
 /* 85 */,
@@ -2736,31 +2760,38 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /* 100 */,
 /* 101 */,
 /* 102 */
-/***/ (function(__unusedmodule, exports) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
-/*
- * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// For internal use, subject to change.
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports._globalThis = void 0;
-/** only globals that common to node and browsers are allowed */
-// eslint-disable-next-line node/no-unsupported-features/es-builtins
-exports._globalThis = typeof globalThis === 'object' ? globalThis : global;
-//# sourceMappingURL=globalThis.js.map
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const fs = __importStar(__webpack_require__(747));
+const os = __importStar(__webpack_require__(87));
+const utils_1 = __webpack_require__(82);
+function issueCommand(command, message) {
+    const filePath = process.env[`GITHUB_${command}`];
+    if (!filePath) {
+        throw new Error(`Unable to find environment variable for file command ${command}`);
+    }
+    if (!fs.existsSync(filePath)) {
+        throw new Error(`Missing file at path: ${filePath}`);
+    }
+    fs.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
+        encoding: 'utf8'
+    });
+}
+exports.issueCommand = issueCommand;
+//# sourceMappingURL=file-command.js.map
 
 /***/ }),
 /* 103 */,
@@ -3998,7 +4029,34 @@ var __createBinding;
 
 
 /***/ }),
-/* 145 */,
+/* 145 */
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+/*
+ * Copyright The OpenTelemetry Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports._globalThis = void 0;
+/** only globals that common to node and browsers are allowed */
+// eslint-disable-next-line node/no-unsupported-features/es-builtins
+exports._globalThis = typeof globalThis === 'object' ? globalThis : global;
+//# sourceMappingURL=globalThis.js.map
+
+/***/ }),
 /* 146 */,
 /* 147 */
 /***/ (function(__unusedmodule, exports) {
@@ -4943,16 +5001,7 @@ function _default(name, version, hashfunc) {
 }
 
 /***/ }),
-/* 242 */
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-__webpack_require__(71);
-
-
-/***/ }),
+/* 242 */,
 /* 243 */,
 /* 244 */,
 /* 245 */
@@ -9701,7 +9750,7 @@ var logger$1 = __webpack_require__(928);
 var abortController = __webpack_require__(106);
 var os = __webpack_require__(87);
 var stream = __webpack_require__(794);
-__webpack_require__(242);
+__webpack_require__(510);
 var crypto = __webpack_require__(417);
 var coreLro = __webpack_require__(889);
 var events = __webpack_require__(614);
@@ -20791,7 +20840,7 @@ var logger = logger$1.createClientLogger("storage-blob");
 
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-var SDK_VERSION = "12.2.0";
+var SDK_VERSION = "12.2.1";
 var SERVICE_VERSION = "2019-12-12";
 var BLOCK_BLOB_MAX_UPLOAD_BLOB_BYTES = 256 * 1024 * 1024; // 256MB
 var BLOCK_BLOB_MAX_STAGE_BLOCK_BYTES = 4000 * 1024 * 1024; // 4000MB
@@ -21128,7 +21177,7 @@ function extractConnectionStringParts(connectionString) {
             url: blobEndpoint,
             accountName: accountName,
             accountKey: accountKey,
-            proxyUri: proxyUri,
+            proxyUri: proxyUri
         };
     }
     else {
@@ -21413,7 +21462,7 @@ function getAccountNameFromUrl(url) {
         }
         else {
             // Custom domain case: "https://customdomain.com/containername/blob".
-            accountName = '';
+            accountName = "";
         }
         return accountName;
     }
@@ -21425,7 +21474,7 @@ function isIpEndpointStyle(parsedUrl) {
     if (parsedUrl.getHost() == undefined) {
         return false;
     }
-    var host = parsedUrl.getHost() + (parsedUrl.getPort() == undefined ? '' : ':' + parsedUrl.getPort());
+    var host = parsedUrl.getHost() + (parsedUrl.getPort() == undefined ? "" : ":" + parsedUrl.getPort());
     // Case 1: Ipv6, use a broad regex to find out candidates whose host contains two ':'.
     // Case 2: localhost(:port), use broad regex to match port part.
     // Case 3: Ipv4, use broad regex which just check if host contains Ipv4.
@@ -24820,7 +24869,7 @@ var StorageSharedKeyCredential = /** @class */ (function (_super) {
  * regenerated.
  */
 var packageName = "azure-storage-blob";
-var packageVersion = "12.2.0";
+var packageVersion = "12.2.1";
 var StorageClientContext = /** @class */ (function (_super) {
     tslib.__extends(StorageClientContext, _super);
     /**
@@ -24842,7 +24891,7 @@ var StorageClientContext = /** @class */ (function (_super) {
             options.userAgent = packageName + "/" + packageVersion + " " + defaultUserAgent;
         }
         _this = _super.call(this, undefined, options) || this;
-        _this.version = '2019-12-12';
+        _this.version = "2019-12-12";
         _this.baseUri = "{url}";
         _this.requestContentType = "application/json; charset=utf-8";
         _this.url = url;
@@ -25362,9 +25411,18 @@ var BuffersStream = /** @class */ (function (_super) {
         var _this = _super.call(this, options) || this;
         _this.buffers = buffers;
         _this.byteLength = byteLength;
-        _this.byteOffset = 0;
+        _this.byteOffsetInCurrentBuffer = 0;
         _this.bufferIndex = 0;
         _this.pushedBytesLength = 0;
+        // check byteLength is no larger than buffers[] total length
+        var buffersLength = 0;
+        for (var _i = 0, _a = _this.buffers; _i < _a.length; _i++) {
+            var buf = _a[_i];
+            buffersLength += buf.byteLength;
+        }
+        if (buffersLength < _this.byteLength) {
+            throw new Error("Data size shouldn't be larger than the total length of buffers.");
+        }
         return _this;
     }
     /**
@@ -25383,19 +25441,31 @@ var BuffersStream = /** @class */ (function (_super) {
         var outBuffers = [];
         var i = 0;
         while (i < size && this.pushedBytesLength < this.byteLength) {
-            var remaining = this.buffers[this.bufferIndex].byteLength - this.byteOffset;
+            // The last buffer may be longer than the data it contains.
+            var remainingDataInAllBuffers = this.byteLength - this.pushedBytesLength;
+            var remainingCapacityInThisBuffer = this.buffers[this.bufferIndex].byteLength - this.byteOffsetInCurrentBuffer;
+            var remaining = Math.min(remainingCapacityInThisBuffer, remainingDataInAllBuffers);
             if (remaining > size - i) {
-                var end = this.byteOffset + size - i;
-                outBuffers.push(this.buffers[this.bufferIndex].slice(this.byteOffset, end));
+                // chunkSize = size - i
+                var end = this.byteOffsetInCurrentBuffer + size - i;
+                outBuffers.push(this.buffers[this.bufferIndex].slice(this.byteOffsetInCurrentBuffer, end));
                 this.pushedBytesLength += size - i;
-                this.byteOffset = end;
+                this.byteOffsetInCurrentBuffer = end;
                 i = size;
                 break;
             }
             else {
-                outBuffers.push(this.buffers[this.bufferIndex].slice(this.byteOffset));
-                this.byteOffset = 0;
-                this.bufferIndex++;
+                // chunkSize = remaining
+                var end = this.byteOffsetInCurrentBuffer + remaining;
+                outBuffers.push(this.buffers[this.bufferIndex].slice(this.byteOffsetInCurrentBuffer, end));
+                if (remaining === remainingCapacityInThisBuffer) {
+                    // this.buffers[this.bufferIndex] used up, shift to next one
+                    this.byteOffsetInCurrentBuffer = 0;
+                    this.bufferIndex++;
+                }
+                else {
+                    this.byteOffsetInCurrentBuffer = end;
+                }
                 this.pushedBytesLength += remaining;
                 i += remaining;
             }
@@ -25439,7 +25509,7 @@ var PooledBuffer = /** @class */ (function () {
          */
         this.buffers = [];
         this.capacity = capacity;
-        this._size = capacity;
+        this._size = 0;
         // allocate
         var bufferNum = Math.ceil(capacity / maxBufferLength);
         for (var i = 0; i < bufferNum; i++) {
@@ -36583,6 +36653,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const os = __importStar(__webpack_require__(87));
+const utils_1 = __webpack_require__(82);
 /**
  * Commands
  *
@@ -36636,28 +36707,14 @@ class Command {
         return cmdStr;
     }
 }
-/**
- * Sanitizes an input into a string so it can be passed into issueCommand safely
- * @param input input to sanitize into a string
- */
-function toCommandValue(input) {
-    if (input === null || input === undefined) {
-        return '';
-    }
-    else if (typeof input === 'string' || input instanceof String) {
-        return input;
-    }
-    return JSON.stringify(input);
-}
-exports.toCommandValue = toCommandValue;
 function escapeData(s) {
-    return toCommandValue(s)
+    return utils_1.toCommandValue(s)
         .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A');
 }
 function escapeProperty(s) {
-    return toCommandValue(s)
+    return utils_1.toCommandValue(s)
         .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A')
@@ -38937,6 +38994,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const command_1 = __webpack_require__(431);
+const file_command_1 = __webpack_require__(102);
+const utils_1 = __webpack_require__(82);
 const os = __importStar(__webpack_require__(87));
 const path = __importStar(__webpack_require__(622));
 /**
@@ -38963,9 +39022,17 @@ var ExitCode;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function exportVariable(name, val) {
-    const convertedVal = command_1.toCommandValue(val);
+    const convertedVal = utils_1.toCommandValue(val);
     process.env[name] = convertedVal;
-    command_1.issueCommand('set-env', { name }, convertedVal);
+    const filePath = process.env['GITHUB_ENV'] || '';
+    if (filePath) {
+        const delimiter = '_GitHubActionsFileCommandDelimeter_';
+        const commandValue = `${name}<<${delimiter}${os.EOL}${convertedVal}${os.EOL}${delimiter}`;
+        file_command_1.issueCommand('ENV', commandValue);
+    }
+    else {
+        command_1.issueCommand('set-env', { name }, convertedVal);
+    }
 }
 exports.exportVariable = exportVariable;
 /**
@@ -38981,7 +39048,13 @@ exports.setSecret = setSecret;
  * @param inputPath
  */
 function addPath(inputPath) {
-    command_1.issueCommand('add-path', {}, inputPath);
+    const filePath = process.env['GITHUB_PATH'] || '';
+    if (filePath) {
+        file_command_1.issueCommand('PATH', inputPath);
+    }
+    else {
+        command_1.issueCommand('add-path', {}, inputPath);
+    }
     process.env['PATH'] = `${inputPath}${path.delimiter}${process.env['PATH']}`;
 }
 exports.addPath = addPath;
@@ -39487,7 +39560,18 @@ function defer(fn)
 /* 507 */,
 /* 508 */,
 /* 509 */,
-/* 510 */,
+/* 510 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+Object.defineProperty(exports, "__esModule", { value: true });
+__webpack_require__(71);
+
+
+/***/ }),
 /* 511 */,
 /* 512 */
 /***/ (function(module) {
@@ -44662,10 +44746,18 @@ var _crypto = _interopRequireDefault(__webpack_require__(417));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const rnds8 = new Uint8Array(16);
+const rnds8Pool = new Uint8Array(256); // # of random values to pre-allocate
+
+let poolPtr = rnds8Pool.length;
 
 function rng() {
-  return _crypto.default.randomFillSync(rnds8);
+  if (poolPtr > rnds8Pool.length - 16) {
+    _crypto.default.randomFillSync(rnds8Pool);
+
+    poolPtr = 0;
+  }
+
+  return rnds8Pool.slice(poolPtr, poolPtr += 16);
 }
 
 /***/ }),
@@ -45367,7 +45459,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(__webpack_require__(102), exports);
+__exportStar(__webpack_require__(145), exports);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
@@ -50947,8 +51039,8 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var uuid = __webpack_require__(585);
 var tslib = __webpack_require__(865);
+var uuid = __webpack_require__(585);
 var tough = __webpack_require__(393);
 var http = __webpack_require__(605);
 var https = __webpack_require__(211);
@@ -51139,7 +51231,7 @@ var Constants = {
      * @const
      * @type {string}
      */
-    coreHttpVersion: "1.1.8",
+    coreHttpVersion: "1.1.9",
     /**
      * Specifies HTTP.
      *
@@ -51168,6 +51260,20 @@ var Constants = {
      * @type {string}
      */
     HTTPS_PROXY: "HTTPS_PROXY",
+    /**
+     * Specifies NO Proxy.
+     *
+     * @const
+     * @type {string}
+     */
+    NO_PROXY: "NO_PROXY",
+    /**
+     * Specifies ALL Proxy.
+     *
+     * @const
+     * @type {string}
+     */
+    ALL_PROXY: "ALL_PROXY",
     HttpConstants: {
         /**
          * Http Verbs
@@ -51358,12 +51464,15 @@ function promiseToServiceCallback(promise) {
         });
     };
 }
-function prepareXMLRootList(obj, elementName) {
-    var _a;
+function prepareXMLRootList(obj, elementName, xmlNamespaceKey, xmlNamespace) {
+    var _a, _b, _c;
     if (!Array.isArray(obj)) {
         obj = [obj];
     }
-    return _a = {}, _a[elementName] = obj, _a;
+    if (!xmlNamespaceKey || !xmlNamespace) {
+        return _a = {}, _a[elementName] = obj, _a;
+    }
+    return _b = {}, _b[elementName] = obj, _b.$ = (_c = {}, _c[xmlNamespaceKey] = xmlNamespace, _c), _b;
 }
 /**
  * Applies the properties on the prototype of sourceCtors to the prototype of targetCtor
@@ -51404,6 +51513,15 @@ function replaceAll(value, searchValue, replaceValue) {
  */
 function isPrimitiveType(value) {
     return (typeof value !== "object" && typeof value !== "function") || value === null;
+}
+function getEnvironmentValue(name) {
+    if (process.env[name]) {
+        return process.env[name];
+    }
+    else if (process.env[name.toLowerCase()]) {
+        return process.env[name.toLowerCase()];
+    }
+    return undefined;
 }
 
 // Copyright (c) Microsoft Corporation.
@@ -51526,13 +51644,13 @@ var Serializer = /** @class */ (function () {
                 payload = serializeBase64UrlType(objectName, object);
             }
             else if (mapperType.match(/^Sequence$/i) !== null) {
-                payload = serializeSequenceType(this, mapper, object, objectName);
+                payload = serializeSequenceType(this, mapper, object, objectName, Boolean(this.isXML));
             }
             else if (mapperType.match(/^Dictionary$/i) !== null) {
-                payload = serializeDictionaryType(this, mapper, object, objectName);
+                payload = serializeDictionaryType(this, mapper, object, objectName, Boolean(this.isXML));
             }
             else if (mapperType.match(/^Composite$/i) !== null) {
-                payload = serializeCompositeType(this, mapper, object, objectName);
+                payload = serializeCompositeType(this, mapper, object, objectName, Boolean(this.isXML));
             }
         }
         return payload;
@@ -51806,7 +51924,8 @@ function serializeDateTypes(typeName, value, objectName) {
     }
     return value;
 }
-function serializeSequenceType(serializer, mapper, object, objectName) {
+function serializeSequenceType(serializer, mapper, object, objectName, isXml) {
+    var _a, _b;
     if (!Array.isArray(object)) {
         throw new Error(objectName + " must be of type Array.");
     }
@@ -51817,11 +51936,26 @@ function serializeSequenceType(serializer, mapper, object, objectName) {
     }
     var tempArray = [];
     for (var i = 0; i < object.length; i++) {
-        tempArray[i] = serializer.serialize(elementType, object[i], objectName);
+        var serializedValue = serializer.serialize(elementType, object[i], objectName);
+        if (isXml && elementType.xmlNamespace) {
+            var xmlnsKey = elementType.xmlNamespacePrefix
+                ? "xmlns:" + elementType.xmlNamespacePrefix
+                : "xmlns";
+            if (elementType.type.name === "Composite") {
+                tempArray[i] = tslib.__assign(tslib.__assign({}, serializedValue), { $: (_a = {}, _a[xmlnsKey] = elementType.xmlNamespace, _a) });
+            }
+            else {
+                tempArray[i] = { _: serializedValue, $: (_b = {}, _b[xmlnsKey] = elementType.xmlNamespace, _b) };
+            }
+        }
+        else {
+            tempArray[i] = serializedValue;
+        }
     }
     return tempArray;
 }
-function serializeDictionaryType(serializer, mapper, object, objectName) {
+function serializeDictionaryType(serializer, mapper, object, objectName, isXml) {
+    var _a;
     if (typeof object !== "object") {
         throw new Error(objectName + " must be of type object.");
     }
@@ -51831,11 +51965,45 @@ function serializeDictionaryType(serializer, mapper, object, objectName) {
             ("mapper and it must of type \"object\" in " + objectName + "."));
     }
     var tempDictionary = {};
-    for (var _i = 0, _a = Object.keys(object); _i < _a.length; _i++) {
-        var key = _a[_i];
-        tempDictionary[key] = serializer.serialize(valueType, object[key], objectName + "." + key);
+    for (var _i = 0, _b = Object.keys(object); _i < _b.length; _i++) {
+        var key = _b[_i];
+        var serializedValue = serializer.serialize(valueType, object[key], objectName);
+        // If the element needs an XML namespace we need to add it within the $ property
+        tempDictionary[key] = getXmlObjectValue(valueType, serializedValue, isXml);
+    }
+    // Add the namespace to the root element if needed
+    if (isXml && mapper.xmlNamespace) {
+        var xmlnsKey = mapper.xmlNamespacePrefix ? "xmlns:" + mapper.xmlNamespacePrefix : "xmlns";
+        return tslib.__assign(tslib.__assign({}, tempDictionary), { $: (_a = {}, _a[xmlnsKey] = mapper.xmlNamespace, _a) });
     }
     return tempDictionary;
+}
+/**
+ * Resolves the additionalProperties property from a referenced mapper
+ * @param serializer the serializer containing the entire set of mappers
+ * @param mapper the composite mapper to resolve
+ * @param objectName name of the object being serialized
+ */
+function resolveAdditionalProperties(serializer, mapper, objectName) {
+    var additionalProperties = mapper.type.additionalProperties;
+    if (!additionalProperties && mapper.type.className) {
+        var modelMapper = resolveReferencedMapper(serializer, mapper, objectName);
+        return modelMapper === null || modelMapper === void 0 ? void 0 : modelMapper.type.additionalProperties;
+    }
+    return additionalProperties;
+}
+/**
+ * Finds the mapper referenced by className
+ * @param serializer the serializer containing the entire set of mappers
+ * @param mapper the composite mapper to resolve
+ * @param objectName name of the object being serialized
+ */
+function resolveReferencedMapper(serializer, mapper, objectName) {
+    var className = mapper.type.className;
+    if (!className) {
+        throw new Error("Class name for model \"" + objectName + "\" is not provided in the mapper \"" + JSON.stringify(mapper, undefined, 2) + "\".");
+    }
+    return serializer.modelMappers[className];
 }
 /**
  * Resolves a composite mapper's modelProperties.
@@ -51845,32 +52013,28 @@ function serializeDictionaryType(serializer, mapper, object, objectName) {
 function resolveModelProperties(serializer, mapper, objectName) {
     var modelProps = mapper.type.modelProperties;
     if (!modelProps) {
-        var className = mapper.type.className;
-        if (!className) {
-            throw new Error("Class name for model \"" + objectName + "\" is not provided in the mapper \"" + JSON.stringify(mapper, undefined, 2) + "\".");
-        }
-        var modelMapper = serializer.modelMappers[className];
+        var modelMapper = resolveReferencedMapper(serializer, mapper, objectName);
         if (!modelMapper) {
-            throw new Error("mapper() cannot be null or undefined for model \"" + className + "\".");
+            throw new Error("mapper() cannot be null or undefined for model \"" + mapper.type.className + "\".");
         }
-        modelProps = modelMapper.type.modelProperties;
+        modelProps = modelMapper === null || modelMapper === void 0 ? void 0 : modelMapper.type.modelProperties;
         if (!modelProps) {
             throw new Error("modelProperties cannot be null or undefined in the " +
-                ("mapper \"" + JSON.stringify(modelMapper) + "\" of type \"" + className + "\" for object \"" + objectName + "\"."));
+                ("mapper \"" + JSON.stringify(modelMapper) + "\" of type \"" + mapper.type.className + "\" for object \"" + objectName + "\"."));
         }
     }
     return modelProps;
 }
-function serializeCompositeType(serializer, mapper, object, objectName) {
-    var _a;
+function serializeCompositeType(serializer, mapper, object, objectName, isXml) {
+    var _a, _b;
     if (getPolymorphicDiscriminatorRecursively(serializer, mapper)) {
         mapper = getPolymorphicMapper(serializer, mapper, object, "clientName");
     }
     if (object != undefined) {
         var payload = {};
         var modelProps = resolveModelProperties(serializer, mapper, objectName);
-        for (var _i = 0, _b = Object.keys(modelProps); _i < _b.length; _i++) {
-            var key = _b[_i];
+        for (var _i = 0, _c = Object.keys(modelProps); _i < _c.length; _i++) {
+            var key = _c[_i];
             var propertyMapper = modelProps[key];
             if (propertyMapper.readOnly) {
                 continue;
@@ -51888,8 +52052,8 @@ function serializeCompositeType(serializer, mapper, object, objectName) {
             else {
                 var paths = splitSerializeName(propertyMapper.serializedName);
                 propName = paths.pop();
-                for (var _c = 0, paths_1 = paths; _c < paths_1.length; _c++) {
-                    var pathName = paths_1[_c];
+                for (var _d = 0, paths_1 = paths; _d < paths_1.length; _d++) {
+                    var pathName = paths_1[_d];
                     var childObject = parentObject[pathName];
                     if (childObject == undefined &&
                         (object[key] != undefined || propertyMapper.defaultValue !== undefined)) {
@@ -51899,6 +52063,12 @@ function serializeCompositeType(serializer, mapper, object, objectName) {
                 }
             }
             if (parentObject != undefined) {
+                if (isXml && mapper.xmlNamespace) {
+                    var xmlnsKey = mapper.xmlNamespacePrefix
+                        ? "xmlns:" + mapper.xmlNamespacePrefix
+                        : "xmlns";
+                    parentObject.$ = tslib.__assign(tslib.__assign({}, parentObject.$), (_a = {}, _a[xmlnsKey] = mapper.xmlNamespace, _a));
+                }
                 var propertyObjectName = propertyMapper.serializedName !== ""
                     ? objectName + "." + propertyMapper.serializedName
                     : objectName;
@@ -51911,23 +52081,24 @@ function serializeCompositeType(serializer, mapper, object, objectName) {
                 }
                 var serializedValue = serializer.serialize(propertyMapper, toSerialize, propertyObjectName);
                 if (serializedValue !== undefined && propName != undefined) {
-                    if (propertyMapper.xmlIsAttribute) {
+                    var value = getXmlObjectValue(propertyMapper, serializedValue, isXml);
+                    if (isXml && propertyMapper.xmlIsAttribute) {
                         // $ is the key attributes are kept under in xml2js.
                         // This keeps things simple while preventing name collision
                         // with names in user documents.
                         parentObject.$ = parentObject.$ || {};
                         parentObject.$[propName] = serializedValue;
                     }
-                    else if (propertyMapper.xmlIsWrapped) {
-                        parentObject[propName] = (_a = {}, _a[propertyMapper.xmlElementName] = serializedValue, _a);
+                    else if (isXml && propertyMapper.xmlIsWrapped) {
+                        parentObject[propName] = (_b = {}, _b[propertyMapper.xmlElementName] = value, _b);
                     }
                     else {
-                        parentObject[propName] = serializedValue;
+                        parentObject[propName] = value;
                     }
                 }
             }
         }
-        var additionalPropertiesMapper = mapper.type.additionalProperties;
+        var additionalPropertiesMapper = resolveAdditionalProperties(serializer, mapper, objectName);
         if (additionalPropertiesMapper) {
             var propNames = Object.keys(modelProps);
             var _loop_1 = function (clientPropName) {
@@ -51944,18 +52115,33 @@ function serializeCompositeType(serializer, mapper, object, objectName) {
     }
     return object;
 }
+function getXmlObjectValue(propertyMapper, serializedValue, isXml) {
+    var _a;
+    if (!isXml || !propertyMapper.xmlNamespace) {
+        return serializedValue;
+    }
+    var xmlnsKey = propertyMapper.xmlNamespacePrefix
+        ? "xmlns:" + propertyMapper.xmlNamespacePrefix
+        : "xmlns";
+    var xmlNamespace = (_a = {}, _a[xmlnsKey] = propertyMapper.xmlNamespace, _a);
+    if (["Composite"].includes(propertyMapper.type.name)) {
+        return tslib.__assign({ $: xmlNamespace }, serializedValue);
+    }
+    return { _: serializedValue, $: xmlNamespace };
+}
 function isSpecialXmlProperty(propertyName) {
     return ["$", "_"].includes(propertyName);
 }
 function deserializeCompositeType(serializer, mapper, responseBody, objectName) {
+    var _a;
     if (getPolymorphicDiscriminatorRecursively(serializer, mapper)) {
         mapper = getPolymorphicMapper(serializer, mapper, responseBody, "serializedName");
     }
     var modelProps = resolveModelProperties(serializer, mapper, objectName);
     var instance = {};
     var handledPropertyNames = [];
-    for (var _i = 0, _a = Object.keys(modelProps); _i < _a.length; _i++) {
-        var key = _a[_i];
+    for (var _i = 0, _b = Object.keys(modelProps); _i < _b.length; _i++) {
+        var key = _b[_i];
         var propertyMapper = modelProps[key];
         var paths = splitSerializeName(modelProps[key].serializedName);
         handledPropertyNames.push(paths[0]);
@@ -51967,8 +52153,8 @@ function deserializeCompositeType(serializer, mapper, responseBody, objectName) 
         var headerCollectionPrefix = propertyMapper.headerCollectionPrefix;
         if (headerCollectionPrefix) {
             var dictionary = {};
-            for (var _b = 0, _c = Object.keys(responseBody); _b < _c.length; _b++) {
-                var headerKey = _c[_b];
+            for (var _c = 0, _d = Object.keys(responseBody); _c < _d.length; _c++) {
+                var headerKey = _d[_c];
                 if (headerKey.startsWith(headerCollectionPrefix)) {
                     dictionary[headerKey.substring(headerCollectionPrefix.length)] = serializer.deserialize(propertyMapper.type.value, responseBody[headerKey], propertyObjectName);
                 }
@@ -51982,16 +52168,29 @@ function deserializeCompositeType(serializer, mapper, responseBody, objectName) 
             }
             else {
                 var propertyName = xmlElementName || xmlName || serializedName;
-                var unwrappedProperty = responseBody[propertyName];
                 if (propertyMapper.xmlIsWrapped) {
-                    unwrappedProperty = responseBody[xmlName];
-                    unwrappedProperty = unwrappedProperty && unwrappedProperty[xmlElementName];
-                    var isEmptyWrappedList = unwrappedProperty === undefined;
-                    if (isEmptyWrappedList) {
-                        unwrappedProperty = [];
-                    }
+                    /* a list of <xmlElementName> wrapped by <xmlName>
+                      For the xml example below
+                        <Cors>
+                          <CorsRule>...</CorsRule>
+                          <CorsRule>...</CorsRule>
+                        </Cors>
+                      the responseBody has
+                        {
+                          Cors: {
+                            CorsRule: [{...}, {...}]
+                          }
+                        }
+                      xmlName is "Cors" and xmlElementName is"CorsRule".
+                    */
+                    var wrapped = responseBody[xmlName];
+                    var elementList = (_a = wrapped === null || wrapped === void 0 ? void 0 : wrapped[xmlElementName]) !== null && _a !== void 0 ? _a : [];
+                    instance[key] = serializer.deserialize(propertyMapper, elementList, propertyObjectName);
                 }
-                instance[key] = serializer.deserialize(propertyMapper, unwrappedProperty, propertyObjectName);
+                else {
+                    var property = responseBody[propertyName];
+                    instance[key] = serializer.deserialize(propertyMapper, property, propertyObjectName);
+                }
             }
         }
         else {
@@ -51999,8 +52198,8 @@ function deserializeCompositeType(serializer, mapper, responseBody, objectName) 
             var propertyInstance = void 0;
             var res = responseBody;
             // traversing the object step by step.
-            for (var _d = 0, paths_2 = paths; _d < paths_2.length; _d++) {
-                var item = paths_2[_d];
+            for (var _e = 0, paths_2 = paths; _e < paths_2.length; _e++) {
+                var item = paths_2[_e];
                 if (!res)
                     break;
                 res = res[item];
@@ -52051,8 +52250,8 @@ function deserializeCompositeType(serializer, mapper, responseBody, objectName) 
         }
     }
     else if (responseBody) {
-        for (var _e = 0, _f = Object.keys(responseBody); _e < _f.length; _e++) {
-            var key = _f[_e];
+        for (var _f = 0, _g = Object.keys(responseBody); _f < _g.length; _f++) {
+            var key = _g[_f];
             if (instance[key] === undefined &&
                 !handledPropertyNames.includes(key) &&
                 !isSpecialXmlProperty(key)) {
@@ -54836,23 +55035,57 @@ function retry$1(policy, request, operationResponse, err, retryData) {
 })(exports.QueryCollectionFormat || (exports.QueryCollectionFormat = {}));
 
 // Copyright (c) Microsoft Corporation.
+var noProxyList = [];
+var isNoProxyInitalized = false;
+var byPassedList = new Map();
 function loadEnvironmentProxyValue() {
     if (!process) {
         return undefined;
     }
-    if (process.env[Constants.HTTPS_PROXY]) {
-        return process.env[Constants.HTTPS_PROXY];
+    var httpsProxy = getEnvironmentValue(Constants.HTTPS_PROXY);
+    var allProxy = getEnvironmentValue(Constants.ALL_PROXY);
+    var httpProxy = getEnvironmentValue(Constants.HTTP_PROXY);
+    return httpsProxy || allProxy || httpProxy;
+}
+// Check whether the given `uri` matches the noProxyList. If it matches, any request sent to that same `uri` won't set the proxy settings.
+function isBypassed(uri) {
+    if (byPassedList.has(uri)) {
+        return byPassedList.get(uri);
     }
-    else if (process.env[Constants.HTTPS_PROXY.toLowerCase()]) {
-        return process.env[Constants.HTTPS_PROXY.toLowerCase()];
+    loadNoProxy();
+    var isBypassed = false;
+    var host = URLBuilder.parse(uri).getHost();
+    for (var _i = 0, noProxyList_1 = noProxyList; _i < noProxyList_1.length; _i++) {
+        var proxyString = noProxyList_1[_i];
+        if (proxyString[0] === ".") {
+            if (uri.endsWith(proxyString)) {
+                isBypassed = true;
+            }
+            else {
+                if (host === proxyString.slice(1) && host.length === proxyString.length - 1) {
+                    isBypassed = true;
+                }
+            }
+        }
+        else {
+            if (host === proxyString) {
+                isBypassed = true;
+            }
+        }
     }
-    else if (process.env[Constants.HTTP_PROXY]) {
-        return process.env[Constants.HTTP_PROXY];
+    byPassedList.set(uri, isBypassed);
+    return isBypassed;
+}
+function loadNoProxy() {
+    if (isNoProxyInitalized) {
+        return;
     }
-    else if (process.env[Constants.HTTP_PROXY.toLowerCase()]) {
-        return process.env[Constants.HTTP_PROXY.toLowerCase()];
+    var noProxy = getEnvironmentValue(Constants.NO_PROXY);
+    if (noProxy) {
+        var list = noProxy.split(",");
+        noProxyList = list.map(function (item) { return item.trim(); }).filter(function (item) { return item.length; });
     }
-    return undefined;
+    isNoProxyInitalized = true;
 }
 function getDefaultProxySettings(proxyUrl) {
     if (!proxyUrl) {
@@ -54908,7 +55141,7 @@ var ProxyPolicy = /** @class */ (function (_super) {
         return _this;
     }
     ProxyPolicy.prototype.sendRequest = function (request) {
-        if (!request.proxySettings) {
+        if (!request.proxySettings && !isBypassed(request.url)) {
             request.proxySettings = this.proxySettings;
         }
         return this._nextPolicy.sendRequest(request);
@@ -55181,6 +55414,51 @@ var DisableResponseDecompressionPolicy = /** @class */ (function (_super) {
         });
     };
     return DisableResponseDecompressionPolicy;
+}(BaseRequestPolicy));
+
+// Copyright (c) Microsoft Corporation.
+function ndJsonPolicy() {
+    return {
+        create: function (nextPolicy, options) {
+            return new NdJsonPolicy(nextPolicy, options);
+        }
+    };
+}
+/**
+ * NdJsonPolicy that formats a JSON array as newline-delimited JSON
+ */
+var NdJsonPolicy = /** @class */ (function (_super) {
+    tslib.__extends(NdJsonPolicy, _super);
+    /**
+     * Creates an instance of KeepAlivePolicy.
+     *
+     * @param nextPolicy
+     * @param options
+     */
+    function NdJsonPolicy(nextPolicy, options) {
+        return _super.call(this, nextPolicy, options) || this;
+    }
+    /**
+     * Sends a request.
+     *
+     * @param request
+     */
+    NdJsonPolicy.prototype.sendRequest = function (request) {
+        return tslib.__awaiter(this, void 0, void 0, function () {
+            var body;
+            return tslib.__generator(this, function (_a) {
+                // There currently isn't a good way to bypass the serializer
+                if (typeof request.body === "string" && request.body.startsWith("[")) {
+                    body = JSON.parse(request.body);
+                    if (Array.isArray(body)) {
+                        request.body = body.map(function (item) { return JSON.stringify(item) + "\n"; }).join("");
+                    }
+                }
+                return [2 /*return*/, this._nextPolicy.sendRequest(request)];
+            });
+        });
+    };
+    return NdJsonPolicy;
 }(BaseRequestPolicy));
 
 // Copyright (c) Microsoft Corporation.
@@ -55480,7 +55758,7 @@ function serializeRequestBody(serviceClient, httpRequest, operationArguments, op
     if (operationSpec.requestBody && operationSpec.requestBody.mapper) {
         httpRequest.body = getOperationArgumentValueFromParameter(serviceClient, operationArguments, operationSpec.requestBody, operationSpec.serializer);
         var bodyMapper = operationSpec.requestBody.mapper;
-        var required = bodyMapper.required, xmlName = bodyMapper.xmlName, xmlElementName = bodyMapper.xmlElementName, serializedName = bodyMapper.serializedName;
+        var required = bodyMapper.required, xmlName = bodyMapper.xmlName, xmlElementName = bodyMapper.xmlElementName, serializedName = bodyMapper.serializedName, xmlNamespace = bodyMapper.xmlNamespace, xmlNamespacePrefix = bodyMapper.xmlNamespacePrefix;
         var typeName = bodyMapper.type.name;
         try {
             if ((httpRequest.body !== undefined && httpRequest.body !== null) || required) {
@@ -55488,11 +55766,13 @@ function serializeRequestBody(serviceClient, httpRequest, operationArguments, op
                 httpRequest.body = operationSpec.serializer.serialize(bodyMapper, httpRequest.body, requestBodyParameterPathString);
                 var isStream = typeName === MapperType.Stream;
                 if (operationSpec.isXML) {
+                    var xmlnsKey = xmlNamespacePrefix ? "xmlns:" + xmlNamespacePrefix : "xmlns";
+                    var value = getXmlValueWithNamespace(xmlNamespace, xmlnsKey, typeName, httpRequest.body);
                     if (typeName === MapperType.Sequence) {
-                        httpRequest.body = stringifyXML(prepareXMLRootList(httpRequest.body, xmlElementName || xmlName || serializedName), { rootName: xmlName || serializedName });
+                        httpRequest.body = stringifyXML(prepareXMLRootList(value, xmlElementName || xmlName || serializedName, xmlnsKey, xmlNamespace), { rootName: xmlName || serializedName });
                     }
                     else if (!isStream) {
-                        httpRequest.body = stringifyXML(httpRequest.body, {
+                        httpRequest.body = stringifyXML(value, {
                             rootName: xmlName || serializedName
                         });
                     }
@@ -55523,6 +55803,18 @@ function serializeRequestBody(serviceClient, httpRequest, operationArguments, op
             }
         }
     }
+}
+/**
+ * Adds an xml namespace to the xml serialized object if needed, otherwise it just returns the value itself
+ */
+function getXmlValueWithNamespace(xmlNamespace, xmlnsKey, typeName, serializedValue) {
+    var _a;
+    // Composite and Sequence schemas already got their root namespace set during serialization
+    // We just need to add xmlns to the other schema types
+    if (xmlNamespace && !["Composite", "Sequence", "Dictionary"].includes(typeName)) {
+        return { _: serializedValue, $: (_a = {}, _a[xmlnsKey] = xmlNamespace, _a) };
+    }
+    return serializedValue;
 }
 function getValueOrFunctionResult(value, defaultValueCreator) {
     var result;
@@ -55566,6 +55858,9 @@ function createDefaultRequestPolicyFactories(authPolicyFactory, options) {
 }
 function createPipelineFromOptions(pipelineOptions, authPolicyFactory) {
     var requestPolicyFactories = [];
+    if (pipelineOptions.sendStreamingJson) {
+        requestPolicyFactories.push(ndJsonPolicy());
+    }
     var userAgentValue = undefined;
     if (pipelineOptions.userAgentOptions && pipelineOptions.userAgentOptions.userAgentPrefix) {
         var userAgentInfo = [];

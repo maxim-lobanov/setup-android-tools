@@ -9,7 +9,7 @@ inputs:
     description: 'Enable caching'
     required: false
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/index.js'
 branding:
   icon: 'package'
